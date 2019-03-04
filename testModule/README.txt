@@ -7,3 +7,4 @@ module:
 4.uart
 5.esp9266
 6.bigiot
+7.tcp
