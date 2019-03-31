@@ -1,71 +1,71 @@
 
 Readme
-	硬件连接：
-		1.使用的是iTop4412开发板的ttySAC0,对应的插座位J41.
-		2.esp8266的VCC连接的是J41的19脚，GND连接的是11脚，Tx连接的是15脚，Rx连接的是16脚.
+    硬件连接：
+    1.使用的是iTop4412开发板的ttySAC0,对应的插座位J41.
+    2.esp8266的VCC连接的是J41的19脚，GND连接的是11脚，Tx连接的是15脚，Rx连接的是16脚.
 
-	测试：
-		1.在连接到无线时，需要先设置应用的模式,然后再连接.
+    测试：
+    1.在连接到无线时，需要先设置应用的模式,然后再连接.
 
 
-	模块说明：
-		1.Esp8266有三种工作模式：
-			STA模式	   ：该模式通过接入广域网，可访问外网.
-			AP模式     ：该模式是将Esp8266作为热点使用，只能实现局域网中通信.
-			ATA+AP模式 ：该模式可以实现局域网和广域网的无缝切换.
+    模块说明：
+    1.Esp8266有三种工作模式：
+    STA模式      ：该模式通过接入广域网，可访问外网.
+    AP模式       ：该模式是将Esp8266作为热点使用，只能实现局域网中通信.
+    ATA+AP模式 ：该模式可以实现局域网和广域网的无缝切换.
 
 
 模块基本功能：
-Command Description				 Command				Return	Param Decription  		Need Implemented   Implemented Result
+Command Description          Command                Return  Param Decription       Need Implemented   Implemented Result
 
-1. 测试指令     				 AT         			  OK									YES
-2. 重启指令     				 AT+RST                   OK									YES
-3. 查看版本信息                  AT+GMR               	  OK									YES
-4. 关闭回显功能 			     ATEx       			  OK   	ATE0:关闭回显 ATE1:开启回显		YES
-5. 恢复出厂设置 				 AT+RESTORE 		      OK									YES
-6. 设置串口配置    				 AT+UART    			  OK									YES
-7. 设置WIFI应用模式 			 AT+CWMODE=<mode> 		  OK   	mode: 1:STA  2:AP  3:STA+AP		YES
-8. 查询WIFI应用模式 			 AT+CWMODE? 			  OK									YES
+1. 测试指令                      AT                       OK                                  YES
+2. 重启指令                      AT+RST                   OK                                  YES
+3. 查看版本信息                    AT+GMR                   OK                                  YES
+4. 关闭回显功能                    ATEx                     OK    ATE0:关闭回显 ATE1:开启回显           YES
+5. 恢复出厂设置                    AT+RESTORE               OK                                  YES
+6. 设置串口配置                    AT+UART                  OK                                  YES
+7. 设置WIFI应用模式                AT+CWMODE=<mode>         OK    mode: 1:STA  2:AP  3:STA+AP   YES
+8. 查询WIFI应用模式                AT+CWMODE?               OK                                  YES
 
-9. 设置连接到路由器 			 AT+CWJAP=<param>         OK    存在Flash中，掉电仍保留
-10.查询接入的路由   			 AT+CWJAP?  	 		  Data
-11.查询当前可用的路由器   		 AT+CWLAP 				  OK
-12.按要求查询当前可用的路由器    AT+CWLAP=<param>  		  OK
-13.断开与路由器之间的连接        AT+CWQAP				  OK
-14.查询断开路由器结果	         AT+CWQAP=?				  OK
+9. 设置连接到路由器                  AT+CWJAP=<param>         OK    存在Flash中，掉电仍保留
+10.查询接入的路由                   AT+CWJAP?                Data
+11.查询当前可用的路由器                AT+CWLAP                 OK
+12.查询当前可用的路由器                AT+CWLAP=<param>         OK
+13.断开与路由器之间的连接               AT+CWQAP                 OK
+14.查询断开路由器结果                 AT+CWQAP=?               OK
 
-15.Esp8266作为热点设置参数       AT+CWSAP=<param>  		  OK
-16.查询Esp8266作为热点的参数     AT+CWSAP?   			  Data
-17.查看已接入Esp8266设备的IP	 AT+CWLIF				  Data
+15.Esp8266作为热点设置参数           AT+CWSAP=<param>         OK
+16.查询Esp8266作为热点的参数          AT+CWSAP?                Data
+17.查看已接入Esp8266设备的IP AT+CWLIF                         Data
 
-18.设置DHCP开关					 AT+CWDHCP=<mode>,<en>	  OK  	存在Flash中，掉电仍保留
-19.设置STA开机自动连接	         AT+CwAUTOCONN=<enable>   OK  	存在Flash中，掉电仍保留
-20.设置STA模式的MAC地址	         AT+CIPSTAMAC=<mac>		  OK	存在Flash中，掉电仍保留
-21.查询STA模式的MAC地址          AT+CIPStAMAC?     		  Data
-22.设置AP模式的MAC地址	         AT+CIPAPMAC=<mac>		  OK	存在Flash中，掉电仍保留
-23.查询AP模式的MAC地址           AT+CIPAPMAC?     		  Data
-24.设置STA模式的IP地址	         AT+CIPSTA=<ip>   		  OK    存在Flash中，掉电仍保留
-25.查询STA模式设置的IP地址		 AT+CIPSTA?				  Data
-26.设置AP模式的IP地址			 AT+CIPAP=<ip>  		  OK    存在Flash中，掉电仍保留
-27.查询AP模式设置的IP地址		 AT+CIPAP?				  Data
-28.保存透传连接到Flash 			 AT+SAVETRANSLINK=<param> OK
-29.设置需要获得连接状态参数		 AT+CIPSTATUS=<param>  	  OK
-30.查询连接状态					 AT+CIPSTATUS?			  Data
-31.建立TCP连接或者注册UDP端口号  AT+CIPSTART=<param> 	  OK
-32.查询建立连接信息				 AT+CIPSTART=?  		  Data
+18.设置DHCP开关                  AT+CWDHCP=<mode>,<en>    OK    存在Flash中，掉电仍保留
+19.设置STA开机自动连接               AT+CwAUTOCONN=<enable>   OK    存在Flash中，掉电仍保留
+20.设置STA模式的MAC地址             AT+CIPSTAMAC=<mac>       OK    存在Flash中，掉电仍保留
+21.查询STA模式的MAC地址             AT+CIPStAMAC?            Data
+22.设置AP模式的MAC地址              AT+CIPAPMAC=<mac>        OK    存在Flash中，掉电仍保留
+23.查询AP模式的MAC地址              AT+CIPAPMAC?             Data
+24.设置STA模式的IP地址              AT+CIPSTA=<ip>           OK    存在Flash中，掉电仍保留
+25.查询STA模式设置的IP地址            AT+CIPSTA?               Data
+26.设置AP模式的IP地址               AT+CIPAP=<ip>            OK    存在Flash中，掉电仍保留
+27.查询AP模式设置的IP地址             AT+CIPAP?                Data
+28.保存透传连接到Flash              AT+SAVETRANSLINK=<param> OK
+29.设置需要获得连接状态参数              AT+CIPSTATUS=<param>     OK
+30.查询连接状态                    AT+CIPSTATUS?            Data
+31.TCP连接或者注册UDP端口号           AT+CIPSTART=<param>      OK
+32.查询建立连接信息                  AT+CIPSTART=?            Data
 
-33.发送数据						 AT+CIPSEND=<param>		  OK
-34.关闭TCP或UDP					 AT+CIPCLOSE=<param> 	  OK
-35.查询关闭TCP或UDP 			 AT+CIPCLOSE=?  		  OK
-36.获取本机IP地址				 AT+CIFSR  				  Data
+33.发送数据                      AT+CIPSEND=<param>       OK
+34.关闭TCP或UDP                 AT+CIPCLOSE=<param>      OK
+35.查询关闭TCP或UDP               AT+CIPCLOSE=?            OK
+36.获取本机IP地址                  AT+CIFSR                 Data
 
-37.启动多连接					 AT+CIPMUX=<mode>  		  OK
-38.配置为服务器					 AT+CIPSERVER=<param>     OK
-39.设置模块传输模式				 AT+CIPMODE=<mode>		  OK
-40.查询模块传输模式 			 AT+CIPMODE=?			  Data
-41.设置服务器超时时间			 AT+CIPSTO=<param>		  OK
-42.网络固件更新  				 AT+CIUPDATE  			  OK
-43.Ping命令					  	 AT+PING=<ip>			  OK
+37.启动多连接                     AT+CIPMUX=<mode>         OK
+38.配置为服务器                    AT+CIPSERVER=<param>     OK
+39.设置模块传输模式                  AT+CIPMODE=<mode>        OK
+40.查询模块传输模式                  AT+CIPMODE=?             Data
+41.设置服务器超时时间                 AT+CIPSTO=<param>        OK
+42.网络固件更新                    AT+CIUPDATE              OK
+43.Ping命令                    AT+PING=<ip>             OK
 
 
 
