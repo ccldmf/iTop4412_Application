@@ -9,15 +9,16 @@
  */
 
 #include <stdio.h>
-#include "esp8266.h"
 #include <pthread.h>
-#include "../uart/uart.h"
+#include "../../module/uart/uart.h"
+#include "../../module/esp8266/esp8266.h"
 
 int main(int argc,char **argv)
     {
     int ret;
     char c;
     char data[50];
+    char *ptr;
     ret = UartInit("/dev/ttySAC0",115200,8,'N',1);
     if(ret < 0)
         {
@@ -36,7 +37,7 @@ int main(int argc,char **argv)
         c = getchar();
         switch(c)
             {
-            case 'S':                   //测试命令
+        case '1':                   //测试命令
             ret = Esp8266SendCmd("AT","OK");
             if(ret == 0)
                 {
@@ -47,18 +48,7 @@ int main(int argc,char **argv)
                 printf("Esp8266SendCmd error\n");
                 }
                 break;
-            case 'D':                   //数据发送，尚未测试
-            ret = Esp8266SendData("hello",NULL);
-            if(ret == 0)
-                {
-                printf("Esp8266SendData is ok\n");
-                }
-            else
-                {
-                printf("Esp8266SendData error\n");
-                }
-                break;
-            case 'R':                   //模块重启
+        case '2':                   //模块重启
             ret = Esp8266Reseat();
             if(ret < 0)
                 {
@@ -69,7 +59,43 @@ int main(int argc,char **argv)
                 printf("reseat ok\n");
                 }
                 break;
-            case 'M':                   //设置wifi模式
+        case '3':                   //版本信息
+            ptr = Esp8266CheckVersion();
+            if(ptr == NULL)
+                {
+                printf("check version error\n");
+                }
+            else
+                {
+                printf("Version Info: %s\n",ptr);
+                }
+                break;
+        case '4':                   //回显设置
+            ret = Esp8266SetReturnDisplay(1);
+            if(ret == -1)
+                {
+                printf("set return display error\n");
+                }
+            else
+                {
+                printf("set return display OK\n");
+                }
+                break;
+        case '5':                   //恢复出厂设置
+            ret = Esp8266ResetFactoryData();
+            if(ret == -1)
+                {
+                printf("set factory data error\n");
+                }
+            else
+                {
+                printf("set factory data OK\n");
+                }
+                break;
+        case '6':                   //设置串口参数
+            break;
+
+        case '7':                   //设置wifi模式
             ret = Esp8266SetMode(1);
             if(ret < 0)
                 {
@@ -80,8 +106,19 @@ int main(int argc,char **argv)
                 printf("set mode ok\n");
                 }
                 break;
-            case 'O':                   //设置路由器
-            ret = Esp8266SetRouter("TP-LINK_028A","ldmf1994");
+        case '8':                   //查看wifi模式
+            ret = Esp8266CheckMode();
+            if(ret < 0)
+                {
+                printf("check mode error\n");
+                }
+            else
+                {
+                printf("check mode ok\n");
+                }
+                break;
+        case '9':                   //设置连接路由器
+            ret = Esp8266SetRouter("TP-LINK_028A","ccldmf1994");
             if(ret < 0)
                 {
                 printf("set router error\n");
@@ -91,6 +128,147 @@ int main(int argc,char **argv)
                 printf("set router ok\n");
                 }
                 break;
+        case 'a':                   //查看连接路由器
+            ret = Esp8266CheckRouter();
+            if(ret < 0)
+                {
+                printf("check router error\n");
+                }
+            else
+                {
+                printf("check router ok\n");
+                }
+                break;
+        case 'b':                   //查看可用的路由器
+            ret = Esp8266CheckUsefulAPRouter();
+            if(ret < 0)
+                {
+                printf("check useful router error\n");
+                }
+            else
+                {
+                printf("check useful router ok\n");
+                }
+                break;
+        case 'c':                   //退出连接的AP路由器
+            ret = Esp8266QuitRouterAPConnect();
+            if(ret < 0)
+                {
+                printf("quit router connect error\n");
+                }
+            else
+                {
+                printf("quit router connect ok\n");
+                }
+                break;
+        case 'd':                   //获得当前路由器参数
+            ret = Esp8266GetAPRouterParam();
+            if(ret < 0)
+                {
+                printf("get router param error\n");
+                }
+            else
+                {
+                printf("get router param ok\n");
+                }
+                break;
+        case 'e':                   //查看已经连接的设备
+            ret = Esp8266CheckConnectedDevice();
+            if(ret < 0)
+                {
+                printf("check connected device error\n");
+                }
+            else
+                {
+                printf("check connected device ok\n");
+                }
+                break;
+        case 'f':                   //设置DHCP
+            ret = Esp8266SetDHCP(0,0);
+            if(ret < 0)
+                {
+                printf("set DHCP error\n");
+                }
+            else
+                {
+                printf("set DHCP ok\n");
+                }
+                break;
+
+        case 'g':                   //设置STA自动连接
+            ret = Esp8266SetSTAAutoConnect(1);
+            if(ret < 0)
+                {
+                printf("set sta auto connect error\n");
+                }
+            else
+                {
+                printf("set sta auto connect ok\n");
+                }
+                break;
+        case 'h':                   //设置STA的MAC地址
+            ret = Esp8266SetSTAMacAddress(NULL);
+            if(ret < 0)
+                {
+                printf("set sta mac address error\n");
+                }
+            else
+                {
+                printf("set sta mac address ok\n");
+                }
+                break;
+
+        case 'i':                   //获得STA的MAC地址
+        ptr = Esp8266GetSTAMacAddress();
+           if(ptr == NULL)
+               {
+               printf("get sta mac address error\n");
+               }
+           else
+               {
+               printf("get sta mac address ok\n");
+               }
+               break;
+
+        case 'j':                   //设置AP的MAC地址
+            ret = Esp8266SetAPMacAddress(NULL);
+            if(ret < 0)
+                {
+                printf("set ap mac address error\n");
+                }
+            else
+                {
+                printf("set ap mac address ok\n");
+                }
+                break;
+
+        case 'k':                   //获得AP的MAC地址
+            ptr = Esp8266GetAPMacAddress();
+            if(ptr == NULL)
+               {
+               printf("get ap mac address error\n");
+               }
+            else
+               {
+               printf("get ap mac address ok\n");
+               }
+               break;
+
+
+        case 'D':                   //数据发送，尚未测试
+            ret = Esp8266SendData("hello",NULL);
+            if(ret == 0)
+                {
+                printf("Esp8266SendData is ok\n");
+                }
+            else
+                {
+                printf("Esp8266SendData error\n");
+                }
+                break;
+
+
+
             case 'G':                   //获得IP
             ret = Esp8266GetIPAddr(data);
             if(ret < 0)
