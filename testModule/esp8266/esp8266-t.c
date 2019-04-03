@@ -10,15 +10,39 @@
 
 #include <stdio.h>
 #include <pthread.h>
+#include <string.h>
 #include "../../module/uart/uart.h"
 #include "../../module/esp8266/esp8266.h"
 
+#define RECVBUFSIZE     1024
+unsigned char g_Transmission_Flag = 0;
+extern char UartRecvBuf[RECVBUFSIZE];
+
+void *uartRecvPthreadHandle(void *arg)
+    {
+    int ret;
+    printf("uartRecvPthreadHandle\n");
+    while(1)
+        {
+        if(g_Transmission_Flag == 1)
+            {
+            ret = UartRecvData(UartRecvBuf,RECVBUFSIZE);
+            if(ret > 0)
+                {
+                printf("Recv Data:%s\n",UartRecvBuf);
+                memset(UartRecvBuf,0,RECVBUFSIZE);
+                }
+            }
+        }
+    }
+// 7 2 9 G C P N S
 int main(int argc,char **argv)
     {
     int ret;
     char c;
     char data[50];
     char *ptr;
+    pthread_t uartRecvPthread;
     ret = UartInit("/dev/ttySAC0",115200,8,'N',1);
     if(ret < 0)
         {
@@ -32,6 +56,13 @@ int main(int argc,char **argv)
         UartClose();
         return -1;
         }
+    if (pthread_create(&uartRecvPthread, NULL, uartRecvPthreadHandle, NULL) == -1)
+        {
+        printf("create error!\n");
+        return 1;
+        }
+
+
     while(1)
         {
         c = getchar();
@@ -256,7 +287,7 @@ int main(int argc,char **argv)
                 }
                 break;
         case 'C':                   //连接服务器
-            ret = Esp8266ConnectServer("TCP","192.168.1.101",8080);
+            ret = Esp8266ConnectServer("TCP","192.168.1.100",8080);
             if(ret < 0)
                 {
                 printf("connect server error\n");
@@ -285,7 +316,19 @@ int main(int argc,char **argv)
                 }
             else
                 {
+                g_Transmission_Flag = 1;
                 printf("start transmission ok\n");
+                }
+                break;
+        case 'S':                   //传输数据
+            ret = Esp8266SendData("hello world",NULL);
+            if(ret < 0)
+                {
+                printf("send data error\n");
+                }
+            else
+                {
+                printf("send data ok\n");
                 }
                 break;
         case 'Q':                   //Ping
