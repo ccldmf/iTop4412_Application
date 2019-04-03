@@ -21,6 +21,10 @@
 static char UartRecvBuf[RECVBUFSIZE];
 //定义串口发送数据存放空间
 static char UartSendBuf[SENDBUFSIZE];
+// 定义存放可用路由器信息空间
+// Size = AP_INFO_MAX_COUNT*sizeof(struct AP_ROUTER_INFO)
+struct AP_ROUTER_INFO *mAPRounterInfo = NULL;
+
 
 /**
  *@brief Esp8266模块初始化
@@ -34,7 +38,35 @@ int Esp8266Init(void)
         {
         printf("Esp8266Init error\n");
         }
+    else
+        {
+        mAPRounterInfo = (struct AP_ROUTER_INFO*)malloc(sizeof(struct AP_ROUTER_INFO) +
+                                                        sizeof(struct SINGLE_AP_INFO) * AP_INFO_MAX_COUNT);
+        if(mAPRounterInfo == NULL)
+            {
+            printf("Esp8266Init malloc space error\n");
+            ret = -1;
+            }
+        else
+            {
+            memset(mAPRounterInfo,0,AP_INFO_MAX_COUNT*sizeof(struct AP_ROUTER_INFO));
+            }
+        }
     return ret;
+    }
+
+/**
+ *@brief Esp8266模块关闭
+ *@return 成功：0 失败：-1
+ */
+int Esp8266Close(void)
+    {
+    if(mAPRounterInfo != NULL)
+        {
+        free(mAPRounterInfo->singleAPInfo);
+        free(mAPRounterInfo);
+        }
+    return 0;
     }
 
 /**
@@ -60,9 +92,9 @@ int Esp8266SendCmd(const char *cmd,const char *ack)
         printf("Esp8266SendCmd RecvData error.-L:%d\n",__LINE__);
         return -1;
         }
+    printf("Recv data:%s\n",UartRecvBuf);
     if(strstr(UartRecvBuf,ack) == NULL)         //在接收到的数据中没有找到指定的ACK字符串
         {
-        printf("not come here\n");
         printf("data:%s\n",UartRecvBuf);
         return -1;
         }
@@ -156,11 +188,20 @@ int Esp8266SetMode(enum WIFIMODE mode)
  */
 enum WIFIMODE Esp8266CheckMode(void)
     {
+    char *ptr;
     int ret = -1;
     ret = Esp8266SendCmd("AT+CWMODE?","OK");
     if(ret == 0)
         {
-        printf("Check Mode data:%s\n",UartRecvBuf);
+        ptr = strstr(UartRecvBuf,":");
+        if(ptr != NULL)
+            {
+            ret = (*(ptr+1) - '0');
+            if(ret < WIFI_STATION || ret > WIFI_AP_STATION)
+                {
+                ret = WIFI_ERROR;
+                }
+            }
         }
     else
         {
@@ -171,7 +212,7 @@ enum WIFIMODE Esp8266CheckMode(void)
 
 /**
  *@brief Esp8266模块设置路由器
- *@param ssid:路由器名	password:密码
+ *@param ssid:路由器名 password:密码
  *@return 成功：0 失败：-1
  */
 int Esp8266SetRouter(const char *ssid,const char *password)
@@ -179,39 +220,94 @@ int Esp8266SetRouter(const char *ssid,const char *password)
     int ret = -1;
     memset(UartSendBuf,0,SENDBUFSIZE);
     sprintf(UartSendBuf,"AT+CWJAP=\"%s\",\"%s\"",ssid,password);
-    ret = Esp8266SendCmd(UartSendBuf,"OK");
+    ret = Esp8266SendCmd(UartSendBuf,"WIFI CONNECTED");
     return ret;
     }
 
 /**
  *@brief Esp8266查看连接路由器
- *@return 成功：0 失败：-1
+ *@return 成功:返回选择的AP 失败：NULL
  */
-int Esp8266CheckRouter(void)
+char* Esp8266CheckRouter(void)
     {
+    char *ptr;
     int ret = -1;
     ret = Esp8266SendCmd("AT+CWJAP?","OK");
     if(ret == 0)
         {
         printf("Check Router Info:%s\n",UartRecvBuf);
+        ptr = strstr(UartRecvBuf,":");
+        if(ptr == NULL)
+            {
+            return NULL;
+            }
+        else
+            {
+            ptr = ptr + 1;
+            ptr = strtok(ptr,"\"");
+            return ptr;
+            }
         }
-    return ret;
+    return NULL;
     }
 
 /**
  *@brief Esp8266查看当前可用的AP路由器
- *@return 成功：0 失败：-1
+ *@return 成功：AP信息 失败：NULL
  */
-int Esp8266CheckUsefulAPRouter(void)
-{
+struct AP_ROUTER_INFO* Esp8266CheckUsefulAPRouter(void)
+    {
+    char *ptr,*tmp,*tmpOffset;
     int ret = -1;
+    int SsidLen;
     ret = Esp8266SendCmd("AT+CWLAP","OK");
     if(ret == 0)
+    {
+    ptr = strstr(UartRecvBuf,"(");
+    ret = 0;
+    while(ptr != NULL)
         {
-        printf("Check Useful Router Info:%s\n",UartRecvBuf);
+        ptr = ptr + 1;
+        tmpOffset = ptr;
+        mAPRounterInfo->singleAPInfo[ret].Type = *ptr - '0';
+        ptr = ptr + 3;
+        //printf("ptr = %s\n",ptr);
+
+        tmp = strtok(ptr,"\"");
+        //printf("tmp = %s\n",tmp);
+        SsidLen = strlen(tmp);
+        //printf("SsidLen = %d\n",SsidLen);
+
+        memcpy(mAPRounterInfo->singleAPInfo[ret].Ssid,ptr,SsidLen);
+
+        tmp = strstr(ptr,",");
+        tmp = strtok(tmp,",");
+        //printf("tmp:%s\n",tmp);
+        mAPRounterInfo->singleAPInfo[ret].Rssi = 255 - atoi(tmp) + 1;
+        mAPRounterInfo->APCountNum = ret + 1;
+
+        ret++;
+        if(ret > AP_INFO_MAX_COUNT)
+            {
+            break;
+            }
+
+        printf("ptr:%s\n",tmpOffset);
+        ptr = strstr(tmpOffset,")");
         }
-    return ret;
-}
+    }
+    printf("ret=%d\n",ret);
+// Balder_test -->
+    int i = 0;
+    for(i = 0;i < mAPRounterInfo->APCountNum;i++)
+    {
+    printf("type-%d = %d\n",i,mAPRounterInfo->singleAPInfo[i].Type);
+    printf("Ssid-%d = %s\n",i,mAPRounterInfo->singleAPInfo[i].Ssid);
+    printf("Rssi-%d = %d\n",i,mAPRounterInfo->singleAPInfo[i].Rssi);
+    }
+// <-- Balder_test
+    return mAPRounterInfo;
+    }
 
 /**
  *@brief Esp8266退出与路由器的AP连接
@@ -225,43 +321,16 @@ int Esp8266QuitRouterAPConnect(void)
     }
 
 /**
- *@brief Esp8266获得当前AP路由器参数
- *@return 成功：0 失败：-1
- */
-int Esp8266GetAPRouterParam(void)
-    {
-    int ret = -1;
-    ret = Esp8266SendCmd("AT+CWSAP?","OK");
-    if(ret == 0)
-        {
-        printf("Get Router Param Info:%s\n",UartRecvBuf);
-        }
-    return ret;
-    }
-
-/**
- *@brief Esp8266查看已经连接的设备
- *@return 成功：0 失败：-1
- */
-int Esp8266CheckConnectedDevice(void)
-    {
-    int ret = -1;
-    ret = Esp8266SendCmd("AT+CWLIF","OK");
-    if(ret == 0)
-        {
-        printf("Check connected device Info:%s\n",UartRecvBuf);
-        }
-    return ret;
-    }
-
-/**
  *@brief Esp8266设置DHCP
  *@param mode:模式 en:使能控制
  *@return 成功：0 失败：-1
  */
-int Esp8266SetDHCP(enum WIFIMODE mode,unsigned char enable)
+int Esp8266SetDHCP(unsigned char mode,unsigned char enable)
     {
     int ret = -1;
+    memset(UartSendBuf,0,SENDBUFSIZE);
+    sprintf(UartSendBuf,"AT+CWDHCP=%d,%d",mode,enable);
+    ret = Esp8266SendCmd(UartSendBuf,"OK");
     return ret;
     }
 
@@ -274,39 +343,9 @@ int Esp8266SetSTAAutoConnect(unsigned char enable)
     {
     int ret = -1;
     memset(UartSendBuf,0,SENDBUFSIZE);
-    sprintf(UartSendBuf,"AT+CWAUTOCONN=\"%d\"",enable);
+    sprintf(UartSendBuf,"AT+CWAUTOCONN=%d",enable);
     ret = Esp8266SendCmd(UartSendBuf,"OK");
     return ret;
-    }
-
-/**
- *@brief Esp8266设置STA的MAC地址
- *@param mac:MAC地址
- *@return 成功：0 失败：-1
- */
-int Esp8266SetSTAMacAddress(char*mac)
-    {
-    int ret =-1;
-    return ret;
-    }
-
-/**
- *@brief Esp8266获取STA的MAC地址
- *@return 成功：MAC地址 失败：NULL
- */
-char* Esp8266GetSTAMacAddress(void)
-    {
-    int ret = -1;
-    ret = Esp8266SendCmd("AT+CIPSTAMAC?","OK");
-    if(ret == 0)
-        {
-        printf("Get STA Mac Address:%s\n",UartRecvBuf);
-        }
-    else
-        {
-        return NULL;
-        }
-    return UartRecvBuf;
     }
 
 /**
@@ -337,8 +376,35 @@ char* Esp8266GetAPMacAddress(void)
         return NULL;
         }
     return UartRecvBuf;
-
 }
+
+/**
+ *@brief Esp8266设置AP模式的IP地址
+ *@return 成功：0 失败：-1
+ */
+int Esp8266SetAPIPAddress(char *ip)
+    {
+    int ret = -1;
+    memset(UartSendBuf,0,SENDBUFSIZE);
+    sprintf(UartSendBuf,"AT+CIPAP=\"%s\"",ip);
+    ret = Esp8266SendCmd(UartSendBuf,"OK");
+    return ret;
+    }
+
+/**
+ *@brief Esp8266获取AP模式的IP地址
+ *@return 成功：IP地址 失败：NULL
+ */
+char* Esp8266GetAPIPAddress(void)
+    {
+    int ret = -1;
+    ret = Esp8266SendCmd("AT+CIPAP?","OK");
+    if(ret < 0)
+        {
+        return NULL;
+        }
+    return UartRecvBuf;
+    }
 
 /**
  *@brief Esp8266模块发送数据
@@ -374,15 +440,12 @@ int Esp8266SendData(const char *data,const char *ack)
     return 0;
     }
 
-
-
-
 /**
  *@brief Esp8266模块IP获取
  *@param 存放IP地址
  *@return 成功：0 失败：-1
  */
-int Esp8266GetIPAddr(char *ip)
+int Esp8266GetLocalIPAddr(char *ip)
     {
     int ret = -1;
     char *ptr,*ptr2;
@@ -446,3 +509,17 @@ int Esp8266StartTransmission(void)
     ret = Esp8266SendCmd("AT+CIPSEND","OK");
     return ret;
     }
+
+/**
+ *@brief Esp8266模块ping功能
+ *@param ip:IP地址
+ *@return 成功：0 失败：-1
+ */
+int Esp8266PingFeture(const char *ip)
+{
+int ret = -1;
+memset(UartSendBuf,0,SENDBUFSIZE);
+sprintf(UartSendBuf,"AT+PING=\"%s\"",ip);
+ret = Esp8266SendCmd(UartSendBuf,"OK");
+return ret;
+}

@@ -19,12 +19,43 @@ enum WIFIMODE
     WIFI_ERROR = -1
     };
 
+// AP类型
+enum AP_TYPE
+{
+    AP_OPEN = 0,
+    AP_WEP,
+    AP_WPA_PSK,
+    AP_WPA2_PSK,
+    AP_WPA_WPA2_PSK
+};
+
+#define AP_INFO_MAX_COUNT   20   // 最多接收可用路由信息个数
+
+struct SINGLE_AP_INFO
+        {
+        enum AP_TYPE Type;       // 接入点类型
+        char Rssi;               // 信号强度
+        char Ssid[64];           // 接入点名称
+        };
+
+
+struct AP_ROUTER_INFO
+{
+    char APCountNum;             // 接入点总数
+    struct SINGLE_AP_INFO singleAPInfo[];
+};
 
 /**
  *@brief Esp8266模块初始化
  *@return 成功：0 失败：-1
  */
 int Esp8266Init(void);
+
+/**
+ *@brief Esp8266模块关闭
+ *@return 成功：0 失败：-1
+ */
+int Esp8266Close(void);
 
 /**
  *@brief Esp8266模块发送密令
@@ -87,15 +118,15 @@ int Esp8266SetRouter(const char *ssid,const char *password);
 
 /**
  *@brief Esp8266查看连接路由器
- *@return 成功：0 失败：-1
+ *@return 成功:返回选择的AP 失败：NULL
  */
-int Esp8266CheckRouter(void);
+char* Esp8266CheckRouter(void);
 
 /**
  *@brief Esp8266查看当前可用的AP路由器
- *@return 成功：0 失败：-1
+ *@return 成功：AP信息 失败：NULL
  */
-int Esp8266CheckUsefulAPRouter(void);
+struct AP_ROUTER_INFO* Esp8266CheckUsefulAPRouter(void);
 
 /**
  *@brief Esp8266退出与路由器的AP连接
@@ -104,23 +135,13 @@ int Esp8266CheckUsefulAPRouter(void);
 int Esp8266QuitRouterAPConnect(void);
 
 /**
- *@brief Esp8266获得当前AP路由器参数
- *@return 成功：0 失败：-1
- */
-int Esp8266GetAPRouterParam(void);
-
-/**
- *@brief Esp8266查看已经连接的设备
- *@return 成功：0 失败：-1
- */
-int Esp8266CheckConnectedDevice(void);
-
-/**
  *@brief Esp8266设置DHCP
  *@param mode:模式 en:使能控制
+ *@desc  mode = 0:AP  mode = 1:STA  mode =2:AP_STA
+ *@desc  en = 0:去能 en = 1:使能
  *@return 成功：0 失败：-1
  */
-int Esp8266SetDHCP(enum WIFIMODE mode,unsigned char en);
+int Esp8266SetDHCP(unsigned char mode,unsigned char en);
 
 /**
  *@brief Esp8266设置STA开机自动连接
@@ -128,19 +149,6 @@ int Esp8266SetDHCP(enum WIFIMODE mode,unsigned char en);
  *@return 成功：0 失败：-1
  */
 int Esp8266SetSTAAutoConnect(unsigned char en);
-
-/**
- *@brief Esp8266设置STA的MAC地址
- *@param mac:MAC地址
- *@return 成功：0 失败：-1
- */
-int Esp8266SetSTAMacAddress(char*mac);
-
-/**
- *@brief Esp8266获取STA的MAC地址
- *@return 成功：MAC地址 失败：NULL
- */
-char* Esp8266GetSTAMacAddress(void);
 
 /**
  *@brief Esp8266设置AP的MAC地址
@@ -155,6 +163,17 @@ int Esp8266SetAPMacAddress(char*mac);
  */
 char* Esp8266GetAPMacAddress(void);
 
+/**
+ *@brief Esp8266设置AP模式的IP地址
+ *@return 成功：0 失败：-1
+ */
+int Esp8266SetAPIPAddress(char *ip);
+
+/**
+ *@brief Esp8266获取AP模式的IP地址
+ *@return 成功：IP地址 失败：NULL
+ */
+char* Esp8266GetAPIPAddress(void);
 
 /**
  *@brief Esp8266模块发送数据
@@ -169,7 +188,7 @@ int Esp8266SendData(const char *data,const char *ack);
  *@param 存放IP地址
  *@return 成功：0 失败：-1
  */
-int Esp8266GetIPAddr(char *ip);
+int Esp8266GetLocalIPAddr(char *ip);
 
 /**
  *@brief Esp8266模块连接到服务器
@@ -189,9 +208,16 @@ int Esp8266SetTransMode(void);
 /**
  *@brief Esp8266模块开始透传
  *@param 无
- *@return 成功：0	失败：-1
+ *@return 成功：0 失败：-1
  */
 int Esp8266StartTransmission(void);
+
+/**
+ *@brief Esp8266模块ping功能
+ *@param ip:IP地址
+ *@return 成功：0 失败：-1
+ */
+int Esp8266PingFeture(const char *ip);
 
 #endif  /* _ESP8266_H */
 
