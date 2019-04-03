@@ -70,7 +70,7 @@ int main(int argc,char **argv)
                 printf("Version Info: %s\n",ptr);
                 }
                 break;
-        case '4':                   //回显设置
+        case '4':                   //回显设置,即设置发送的命令是否再次显示
             ret = Esp8266SetReturnDisplay(1);
             if(ret == -1)
                 {
@@ -114,7 +114,7 @@ int main(int argc,char **argv)
                 }
             else
                 {
-                printf("check mode ok\n");
+                printf("check mode ok,Mode = %d\n",ret);
                 }
                 break;
         case '9':                   //设置连接路由器
@@ -129,19 +129,19 @@ int main(int argc,char **argv)
                 }
                 break;
         case 'a':                   //查看连接路由器
-            ret = Esp8266CheckRouter();
-            if(ret < 0)
+            ptr = Esp8266CheckRouter();
+            if(ptr == NULL)
                 {
                 printf("check router error\n");
                 }
             else
                 {
-                printf("check router ok\n");
+                printf("check router ok,Router= %s\n",ptr);
                 }
                 break;
         case 'b':                   //查看可用的路由器
-            ret = Esp8266CheckUsefulAPRouter();
-            if(ret < 0)
+            ptr = Esp8266CheckUsefulAPRouter();
+            if(ptr == NULL)
                 {
                 printf("check useful router error\n");
                 }
@@ -161,30 +161,9 @@ int main(int argc,char **argv)
                 printf("quit router connect ok\n");
                 }
                 break;
-        case 'd':                   //获得当前路由器参数
-            ret = Esp8266GetAPRouterParam();
-            if(ret < 0)
-                {
-                printf("get router param error\n");
-                }
-            else
-                {
-                printf("get router param ok\n");
-                }
-                break;
-        case 'e':                   //查看已经连接的设备
-            ret = Esp8266CheckConnectedDevice();
-            if(ret < 0)
-                {
-                printf("check connected device error\n");
-                }
-            else
-                {
-                printf("check connected device ok\n");
-                }
-                break;
+
         case 'f':                   //设置DHCP
-            ret = Esp8266SetDHCP(0,0);
+            ret = Esp8266SetDHCP(0,1);
             if(ret < 0)
                 {
                 printf("set DHCP error\n");
@@ -206,29 +185,6 @@ int main(int argc,char **argv)
                 printf("set sta auto connect ok\n");
                 }
                 break;
-        case 'h':                   //设置STA的MAC地址
-            ret = Esp8266SetSTAMacAddress(NULL);
-            if(ret < 0)
-                {
-                printf("set sta mac address error\n");
-                }
-            else
-                {
-                printf("set sta mac address ok\n");
-                }
-                break;
-
-        case 'i':                   //获得STA的MAC地址
-        ptr = Esp8266GetSTAMacAddress();
-           if(ptr == NULL)
-               {
-               printf("get sta mac address error\n");
-               }
-           else
-               {
-               printf("get sta mac address ok\n");
-               }
-               break;
 
         case 'j':                   //设置AP的MAC地址
             ret = Esp8266SetAPMacAddress(NULL);
@@ -253,7 +209,28 @@ int main(int argc,char **argv)
                printf("get ap mac address ok\n");
                }
                break;
-
+        case 'm':                   //设置AP的IP地址
+            ret = Esp8266SetAPIPAddress("192.168.1.105");
+            if(ret < 0)
+               {
+               printf("set ap ip address error\n");
+               }
+            else
+               {
+               printf("set ap ip address ok\n");
+               }
+               break;
+       case 'n':                   //获得AP的IP地址
+            ptr = Esp8266GetAPIPAddress();
+            if(ptr == NULL)
+               {
+               printf("get ap ip address error\n");
+               }
+            else
+               {
+               printf("get ap ip address ok\n");
+               }
+               break;
 
         case 'D':                   //数据发送，尚未测试
             ret = Esp8266SendData("hello",NULL);
@@ -267,10 +244,8 @@ int main(int argc,char **argv)
                 }
                 break;
 
-
-
-            case 'G':                   //获得IP
-            ret = Esp8266GetIPAddr(data);
+        case 'G':                   //获得IP
+            ret = Esp8266GetLocalIPAddr(data);
             if(ret < 0)
                 {
                 printf("get ip error\n");
@@ -280,8 +255,8 @@ int main(int argc,char **argv)
                 printf("ip data:%s\n",data);
                 }
                 break;
-            case 'C':                   //连接服务器
-            ret = Esp8266ConnectServer("TCP","192.168.1.102",8080);
+        case 'C':                   //连接服务器
+            ret = Esp8266ConnectServer("TCP","192.168.1.101",8080);
             if(ret < 0)
                 {
                 printf("connect server error\n");
@@ -291,7 +266,7 @@ int main(int argc,char **argv)
                 printf("connect server ok\n");
                 }
                 break;
-            case 'P':                   //设置开启透传模式
+        case 'P':                   //设置开启透传模式
             ret = Esp8266SetTransMode();
             if(ret < 0)
                 {
@@ -302,7 +277,7 @@ int main(int argc,char **argv)
                 printf("set transmode ok\n");
                 }
                 break;
-            case 'N':                   //设置开始透传
+        case 'N':                   //设置开始透传
             ret = Esp8266StartTransmission();
             if(ret < 0)
                 {
@@ -313,8 +288,19 @@ int main(int argc,char **argv)
                 printf("start transmission ok\n");
                 }
                 break;
-            default:
+        case 'Q':                   //Ping
+            ret = Esp8266PingFeture("192.168.1.101");
+            if(ret < 0)
+                {
+                printf("ping error\n");
+                }
+            else
+                {
+                printf("ping ok\n");
+                }
                 break;
+        default:
+            break;
             };
         }
 
