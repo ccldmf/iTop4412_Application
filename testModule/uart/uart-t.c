@@ -11,12 +11,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "uart.h"
+#include "../../module/uart/uart.h"
 
 
 #define UARTNAME    "/dev/ttySAC0"
 
-int main(int argc,char *argv)
+int main(int argc,char **argv)
     {
     char *recv_data;
     int ret;
@@ -33,26 +33,16 @@ int main(int argc,char *argv)
         printf("malloc memory error\n");
         return -1;
         }
-    char AT_cmd[] = {'A','T','\r','\n'};
     while(1)
         {
-#if 0
-        ret = UartRecvData(recv_data,10);
+        ret = UartRecvData(recv_data,1024);
         if(ret > 0)
             {
+            printf("recv:len = %d,data = %s\n\n",ret ,recv_data);
             UartSendData(recv_data,ret);
             }
-#else
-        UartSendData(AT_cmd,sizeof(AT_cmd));
-        ret = UartRecvData(recv_data,100);
-        if(ret > 0)
-            {
-            printf("recv:%s\n",recv_data);
-            }
         sleep(1);
-#endif
         }
     return 0;
     }
-
 

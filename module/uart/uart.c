@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include "uart.h"
 
+
 //串口文件描述符
 static int g_uart_fd = -1;
 
@@ -31,85 +32,117 @@ static int g_uart_fd = -1;
  */
 static int set_opt(int fd,int nSpeed, int nBits, char nEvent, int nStop)
     {
-    struct termios newtio,oldtio;
-    if  ( tcgetattr( fd,&oldtio)  !=  0)
+    struct termios theOption,oldOpton;
+    if  ( tcgetattr( fd,&oldOpton) !=  0)
         {
         perror("SetupSerial 1");
         return -1;
         }
-    bzero( &newtio, sizeof( newtio ) );
-    newtio.c_cflag  |=  CLOCAL | CREAD;
-    newtio.c_cflag &= ~CSIZE;
 
+    bzero( &theOption, sizeof( theOption ));
+    //设置串口输入和输出波特率
+    switch( nSpeed )
+       {
+       case 2400:
+           cfsetispeed(&theOption, B2400);
+           cfsetospeed(&theOption, B2400);
+           break;
+       case 4800:
+           cfsetispeed(&theOption, B4800);
+           cfsetospeed(&theOption, B4800);
+           break;
+       case 9600:
+           cfsetispeed(&theOption, B9600);
+           cfsetospeed(&theOption, B9600);
+           break;
+       case 115200:
+           cfsetispeed(&theOption, B115200);
+           cfsetospeed(&theOption, B115200);
+           break;
+       case 460800:
+           cfsetispeed(&theOption, B460800);
+           cfsetospeed(&theOption, B460800);
+           break;
+       case 921600:
+           cfsetispeed(&theOption, B921600);
+           cfsetospeed(&theOption, B921600);
+           break;
+       default:
+           cfsetispeed(&theOption, B9600);
+           cfsetospeed(&theOption, B9600);
+           break;
+       }
+
+    //修改控制模式，保证程序不会占用串口
+    theOption.c_cflag |= CLOCAL;
+    //且能够从串口中读取数据
+    theOption.c_cflag |= CREAD;
+
+    //设置数据流控控制，此处不适用数据流控制
+    theOption.c_cflag &= ~CRTSCTS;
+
+    //屏蔽其他标志位
+    theOption.c_cflag &= ~CSIZE;
+    //设置数据位
     switch( nBits )
         {
+        case 5:
+            theOption.c_cflag |= CS5;
+            break;
+        case 6:
+            theOption.c_cflag |= CS6;
+            break;
         case 7:
-            newtio.c_cflag |= CS7;
+            theOption.c_cflag |= CS7;
             break;
         case 8:
-            newtio.c_cflag |= CS8;
-            break;
-        }
-
-    switch( nEvent )
-        {
-        case 'O':
-            newtio.c_cflag |= PARENB;
-            newtio.c_cflag |= PARODD;
-            newtio.c_iflag |= (INPCK | ISTRIP);
-            break;
-        case 'E':
-            newtio.c_iflag |= (INPCK | ISTRIP);
-            newtio.c_cflag |= PARENB;
-            newtio.c_cflag &= ~PARODD;
-            break;
-        case 'N':
-            newtio.c_cflag &= ~PARENB;
-            break;
-        }
-
-    switch( nSpeed )
-        {
-        case 2400:
-            cfsetispeed(&newtio, B2400);
-            cfsetospeed(&newtio, B2400);
-            break;
-        case 4800:
-            cfsetispeed(&newtio, B4800);
-            cfsetospeed(&newtio, B4800);
-            break;
-        case 9600:
-            cfsetispeed(&newtio, B9600);
-            cfsetospeed(&newtio, B9600);
-            break;
-        case 115200:
-            cfsetispeed(&newtio, B115200);
-            cfsetospeed(&newtio, B115200);
-            break;
-        case 460800:
-            cfsetispeed(&newtio, B460800);
-            cfsetospeed(&newtio, B460800);
-            break;
-        case 921600:
-            printf("B921600\n");
-            cfsetispeed(&newtio, B921600);
-            cfsetospeed(&newtio, B921600);
+            theOption.c_cflag |= CS8;
             break;
         default:
-            cfsetispeed(&newtio, B9600);
-            cfsetospeed(&newtio, B9600);
+            theOption.c_cflag |= CS8;
             break;
         }
-    if( nStop == 1 )
-        newtio.c_cflag &=  ~CSTOPB;
-    else if ( nStop == 2 )
-        newtio.c_cflag |=  CSTOPB;
-    newtio.c_cc[VTIME]  = 0;
-    newtio.c_cc[VMIN] = 0;
-    tcflush(fd,TCIFLUSH);
-    if((tcsetattr(fd,TCSANOW,&newtio))!=0)
+
+    //设置校验位
+    switch( nEvent )
         {
-        perror("com set error");
+        case 'O':       //设置为奇校验
+            theOption.c_cflag |= (PARODD | PARENB);
+            theOption.c_iflag |= INPCK;
+            break;
+        case 'E':       //设置为偶校验
+            theOption.c_cflag |= PARENB;
+            theOption.c_cflag &= ~PARODD;
+            theOption.c_iflag |= INPCK;
+            break;
+        case 'N':       //无奇偶校验
+            theOption.c_cflag &= ~PARENB;
+            theOption.c_iflag &= ~INPCK;
+            break;
+        }
+
+    //设置停止位
+    if( nStop == 1 )
+        theOption.c_cflag &= ~CSTOPB;
+    else if ( nStop == 2 )
+        theOption.c_cflag |= CSTOPB;
+    else
+        theOption.c_cflag &= ~CSTOPB;
+
+    //修改输出模式，原始数据输出
+    theOption.c_oflag &= ~OPOST;
+    theOption.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+
+    //设置等待时间和最小接收字符
+    theOption.c_cc[VTIME] = 1;      //读取一个字符等待 1*(1/10)s
+    theOption.c_cc[VMIN]  = 1;      //读取字符的最少个数为1
+
+    //如果发生数据溢出，接收数据，但是不再读取，刷新收到的数据但是不读
+    tcflush(fd,TCIFLUSH);
+    //激活配置
+    if((tcsetattr(fd,TCSANOW,&theOption))!=0)
+        {
+        perror("Uart set param error");
         return -1;
         }
     return 0;
@@ -152,12 +185,15 @@ int UartSendData(const char *data,int len)
     {
     int ret;
     ret = write(g_uart_fd,data,len);
-    if(ret < 0)
+    if(ret == len)
         {
-        printf("UartSendData error\n");
-        return -1;
+        return 0;
         }
-    return 0;
+    else
+        {
+        tcflush(g_uart_fd,TCOFLUSH);
+        }
+    return -1;
     }
 
 /**
@@ -167,37 +203,27 @@ int UartSendData(const char *data,int len)
  */
 int UartRecvData(char *data,int len)
     {
-    int read_len = 0;
     int ret;
     int fs_sel;
-    unsigned char continue_read = 1;
     fd_set fs_read;
     struct timeval time;
 
     FD_ZERO(&fs_read);
     FD_SET(g_uart_fd,&fs_read);
 
-    time.tv_sec = 3;            //定时2秒，如果在2秒钟仍未收到数据，则认为是下一个数据
+    time.tv_sec = 3;
     time.tv_usec = 0;
 
-    do
-    {
     fs_sel = select(g_uart_fd+1,&fs_read,NULL,NULL,&time);
     if(fs_sel)                  //有数据
         {
-        ret = read(g_uart_fd,(data+read_len),len);
-        read_len += ret;
-        }
-    else if(fs_sel == 0)        //超时
-        {
-        continue_read = 0;
-        return read_len;
+        ret = read(g_uart_fd,data,len);
+        return ret;
         }
     else                        //错误
         {
         return -1;
         }
-    }while((continue_read == 1)&&(read_len < len));
     }
 
 /**
@@ -207,3 +233,4 @@ void UartClose(void)
     {
     close(g_uart_fd);
     }
+
