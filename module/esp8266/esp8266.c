@@ -18,7 +18,7 @@
 #define SENDBUFSIZE     1024
 
 //定义串口接收数据存放空间
-static char UartRecvBuf[RECVBUFSIZE];
+ char UartRecvBuf[RECVBUFSIZE];
 //定义串口发送数据存放空间
 static char UartSendBuf[SENDBUFSIZE];
 // 定义存放可用路由器信息空间
