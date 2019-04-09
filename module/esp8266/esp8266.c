@@ -14,17 +14,13 @@
 #include "../uart/uart.h"
 #include "esp8266.h"
 
-#define RECVBUFSIZE     1024
-#define SENDBUFSIZE     1024
-
-//定义串口接收数据存放空间
- char UartRecvBuf[RECVBUFSIZE];
-//定义串口发送数据存放空间
-static char UartSendBuf[SENDBUFSIZE];
 // 定义存放可用路由器信息空间
 // Size = AP_INFO_MAX_COUNT*sizeof(struct AP_ROUTER_INFO)
 struct AP_ROUTER_INFO *mAPRounterInfo = NULL;
 
+// 定义存放版本信息空间
+// Size = sizeof(struct VERSION_INFO)
+struct VERSION_INFO *mVersionInfo = NULL;
 
 /**
  *@brief Esp8266模块初始化
@@ -44,12 +40,25 @@ int Esp8266Init(void)
                                                         sizeof(struct SINGLE_AP_INFO) * AP_INFO_MAX_COUNT);
         if(mAPRounterInfo == NULL)
             {
-            printf("Esp8266Init malloc space error\n");
-            ret = -1;
+            printf("Esp8266Init malloc router info space error\n");
+            return -1;
             }
         else
             {
             memset(mAPRounterInfo,0,AP_INFO_MAX_COUNT*sizeof(struct AP_ROUTER_INFO));
+            }
+
+        mVersionInfo = (struct VERSION_INFO*)malloc(sizeof(struct VERSION_INFO));
+        if(mVersionInfo == NULL)
+            {
+            printf("Esp8266Init malloc Version info space error\n");
+            free(mAPRounterInfo->singleAPInfo);
+            free(mAPRounterInfo);
+            return -1;
+            }
+        else
+            {
+            memset(mVersionInfo,0,sizeof(struct VERSION_INFO));
             }
         }
     return ret;
@@ -66,6 +75,10 @@ int Esp8266Close(void)
         free(mAPRounterInfo->singleAPInfo);
         free(mAPRounterInfo);
         }
+    if(mVersionInfo != NULL)
+        {
+        free(mVersionInfo);
+        }
     return 0;
     }
 
@@ -78,24 +91,19 @@ int Esp8266Close(void)
 int Esp8266SendCmd(const char *cmd,const char *ack)
     {
     int ret;
-    sprintf(UartSendBuf,"%s\r\n",cmd);
-    ret = UartSendData(UartSendBuf,strlen(UartSendBuf));
+    char *sendPtr = GetUartSendBuf();
+    char *recvPtr = GetUartRecvBuf();
+    sprintf(sendPtr,"%s\r\n",cmd);
+    ret = UartSendData(sendPtr,strlen(sendPtr));
     if(ret < 0)
         {
         printf("Esp8266SendCmd SendData error.-L:%d\n",__LINE__);
         return -1;
         }
-    memset(UartRecvBuf,0,RECVBUFSIZE);
-    ret = UartRecvData(UartRecvBuf,RECVBUFSIZE);
-    if(ret < 0)
+
+    sleep(1);
+    if(strstr(recvPtr,ack) == NULL)         //在接收到的数据中没有找到指定的ACK字符串
         {
-        printf("Esp8266SendCmd RecvData error.-L:%d\n",__LINE__);
-        return -1;
-        }
-    printf("Recv data:%s\n",UartRecvBuf);
-    if(strstr(UartRecvBuf,ack) == NULL)         //在接收到的数据中没有找到指定的ACK字符串
-        {
-        printf("data:%s\n",UartRecvBuf);
         return -1;
         }
     return 0;
@@ -116,7 +124,7 @@ int Esp8266Reseat(void)
  *@brief Esp8266查看版本信息
  *@return 成功：版本信息 失败：null
  */
- char* Esp8266CheckVersion(void)
+struct VERSION_INFO* Esp8266CheckVersion(void)
     {
     int ret = -1;
     ret = Esp8266SendCmd("AT+GMR","OK");
@@ -125,7 +133,47 @@ int Esp8266Reseat(void)
         printf("Esp8266CheckVersion error\n");
         return NULL;
         }
-    return UartRecvBuf;
+    char *p1,*p2;
+    char *recvPtr = GetUartRecvBuf();
+    p1 = strstr(recvPtr,"AT version:");
+    p2 = strstr(recvPtr,"(");
+
+    if(p1 != NULL && p2 != NULL && p1 < p2)
+        {
+        p1 = p1 + strlen("AT version:");
+        memcpy(mVersionInfo->ATVersion,p1,p2-p1);
+        }
+    else
+        {
+        return NULL;
+        }
+
+    p1 = p2;
+    p1 = strstr(p1,"SDK version:");
+    p2 = strstr(p1,"(");
+    if(p1 != NULL && p2 != NULL && p1 < p2)
+        {
+        p1 = p1 + strlen("SDK version:");
+        memcpy(mVersionInfo->SDKVersion,p1,p2-p1);
+        }
+    else
+        {
+        return NULL;
+        }
+
+    p1 = p2;
+    p1 = strstr(p1,"compile time:");
+    p2 = strstr(p1,"OK");
+    if(p1 != NULL && p2 != NULL && p1 < p2)
+        {
+        p1 = p1 + strlen("compile time:");
+        memcpy(mVersionInfo->SDKVersion,p1,p2-p1);
+        }
+    else
+        {
+        return NULL;
+        }
+    return mVersionInfo;
     }
 
 /**
@@ -176,9 +224,9 @@ int Esp8266SetUart(unsigned int baudrate,unsigned char databits,
 int Esp8266SetMode(enum WIFIMODE mode)
     {
     int ret = -1;
-    memset(UartSendBuf,0,SENDBUFSIZE);
-    sprintf(UartSendBuf,"AT+CWMODE=%d",mode);
-    ret = Esp8266SendCmd(UartSendBuf,"OK");
+    char *theSendPtr = GetUartSendBuf();
+    sprintf(theSendPtr,"AT+CWMODE=%d",mode);
+    ret = Esp8266SendCmd(theSendPtr,"OK");
     return ret;
     }
 
@@ -193,7 +241,8 @@ enum WIFIMODE Esp8266CheckMode(void)
     ret = Esp8266SendCmd("AT+CWMODE?","OK");
     if(ret == 0)
         {
-        ptr = strstr(UartRecvBuf,":");
+        char *theRecvPtr = GetUartRecvBuf();
+        ptr = strstr(theRecvPtr,":");
         if(ptr != NULL)
             {
             ret = (*(ptr+1) - '0');
@@ -218,9 +267,9 @@ enum WIFIMODE Esp8266CheckMode(void)
 int Esp8266SetRouter(const char *ssid,const char *password)
     {
     int ret = -1;
-    memset(UartSendBuf,0,SENDBUFSIZE);
-    sprintf(UartSendBuf,"AT+CWJAP=\"%s\",\"%s\"",ssid,password);
-    ret = Esp8266SendCmd(UartSendBuf,"WIFI CONNECTED");
+    char *theSendPtr = GetUartSendBuf();
+    sprintf(theSendPtr,"AT+CWJAP=\"%s\",\"%s\"",ssid,password);
+    ret = Esp8266SendCmd(theSendPtr,"WIFI CONNECTED");
     return ret;
     }
 
@@ -235,8 +284,9 @@ char* Esp8266CheckRouter(void)
     ret = Esp8266SendCmd("AT+CWJAP?","OK");
     if(ret == 0)
         {
-        printf("Check Router Info:%s\n",UartRecvBuf);
-        ptr = strstr(UartRecvBuf,":");
+        char *theRecvPtr = GetUartRecvBuf();
+        printf("Check Router Info:%s\n",theRecvPtr);
+        ptr = strstr(theRecvPtr,":");
         if(ptr == NULL)
             {
             return NULL;
@@ -263,7 +313,8 @@ struct AP_ROUTER_INFO* Esp8266CheckUsefulAPRouter(void)
     ret = Esp8266SendCmd("AT+CWLAP","OK");
     if(ret == 0)
     {
-    ptr = strstr(UartRecvBuf,"(");
+    char *theRecvPtr = GetUartRecvBuf();;
+    ptr = strstr(theRecvPtr,"(");
     ret = 0;
     while(ptr != NULL)
         {
@@ -328,9 +379,9 @@ int Esp8266QuitRouterAPConnect(void)
 int Esp8266SetDHCP(unsigned char mode,unsigned char enable)
     {
     int ret = -1;
-    memset(UartSendBuf,0,SENDBUFSIZE);
-    sprintf(UartSendBuf,"AT+CWDHCP=%d,%d",mode,enable);
-    ret = Esp8266SendCmd(UartSendBuf,"OK");
+    char *theSendPtr = GetUartSendBuf();
+    sprintf(theSendPtr,"AT+CWDHCP=%d,%d",mode,enable);
+    ret = Esp8266SendCmd(theSendPtr,"OK");
     return ret;
     }
 
@@ -342,9 +393,9 @@ int Esp8266SetDHCP(unsigned char mode,unsigned char enable)
 int Esp8266SetSTAAutoConnect(unsigned char enable)
     {
     int ret = -1;
-    memset(UartSendBuf,0,SENDBUFSIZE);
-    sprintf(UartSendBuf,"AT+CWAUTOCONN=%d",enable);
-    ret = Esp8266SendCmd(UartSendBuf,"OK");
+    char *theSendPtr = GetUartSendBuf();
+    sprintf(theSendPtr,"AT+CWAUTOCONN=%d",enable);
+    ret = Esp8266SendCmd(theSendPtr,"OK");
     return ret;
     }
 
@@ -369,13 +420,13 @@ char* Esp8266GetAPMacAddress(void)
     ret = Esp8266SendCmd("AT+CIPAPMAC?","OK");
     if(ret == 0)
         {
-        printf("Get AP Mac Address:%s\n",UartRecvBuf);
+        printf("Get AP Mac Address\n");
         }
     else
         {
         return NULL;
         }
-    return UartRecvBuf;
+    return NULL;  //just for test
 }
 
 /**
@@ -385,9 +436,9 @@ char* Esp8266GetAPMacAddress(void)
 int Esp8266SetAPIPAddress(char *ip)
     {
     int ret = -1;
-    memset(UartSendBuf,0,SENDBUFSIZE);
-    sprintf(UartSendBuf,"AT+CIPAP=\"%s\"",ip);
-    ret = Esp8266SendCmd(UartSendBuf,"OK");
+    char *theSendPtr = GetUartSendBuf();
+    sprintf(theSendPtr,"AT+CIPAP=\"%s\"",ip);
+    ret = Esp8266SendCmd(theSendPtr,"OK");
     return ret;
     }
 
@@ -403,7 +454,7 @@ char* Esp8266GetAPIPAddress(void)
         {
         return NULL;
         }
-    return UartRecvBuf;
+    return NULL;    //just for test
     }
 
 /**
@@ -423,14 +474,12 @@ int Esp8266SendData(const char *data,const char *ack)
         }
     if(ack != NULL)                                     //需要对接收的数据进行比较
         {
-        memset(UartRecvBuf,0,RECVBUFSIZE);
-        ret = UartRecvData(UartRecvBuf,RECVBUFSIZE);
-        if(ret < 0)
+        char *theRecvPtr = GetUartRecvBuf();
+        if(theRecvPtr == NULL)
             {
-            printf("Esp8266SendData RecvData error.-L:%d\n",__LINE__);
             return -1;
             }
-        if(strstr(UartRecvBuf,ack) == NULL)
+        if(strstr(theRecvPtr,ack) == NULL)
             {
             printf("Esp8266SendData ack error.-L:%d\n",__LINE__);
             return -1;
@@ -449,12 +498,13 @@ int Esp8266GetLocalIPAddr(char *ip)
     {
     int ret = -1;
     char *ptr,*ptr2;
-    memset(UartSendBuf,0,SENDBUFSIZE);
-    sprintf(UartSendBuf,"AT+CIFSR");
-    ret = Esp8266SendCmd(UartSendBuf,"OK");
+    char *theSendPtr = GetUartSendBuf();
+    sprintf(theSendPtr,"AT+CIFSR");
+    ret = Esp8266SendCmd(theSendPtr,"OK");
     if(ret == 0)
         {
-        ptr = strstr(UartRecvBuf,"CIFSR:STAIP");
+        char *theRecvPtr = GetUartRecvBuf();
+        ptr = strstr(theRecvPtr,"CIFSR:STAIP");
         if(ptr != NULL)
             {
             ptr += sizeof("CIFSR:STAIP");
@@ -478,9 +528,9 @@ int Esp8266GetLocalIPAddr(char *ip)
 int  Esp8266ConnectServer(const char *type,const char *ip,const unsigned int port)
     {
     int ret = -1;
-    memset(UartSendBuf,0,SENDBUFSIZE);
-    sprintf(UartSendBuf,"AT+CIPSTART=\"%s\",\"%s\",%d",type,ip,port);
-    ret = Esp8266SendCmd(UartSendBuf,"OK");
+    char *theSendPtr = GetUartSendBuf();
+    sprintf(theSendPtr,"AT+CIPSTART=\"%s\",\"%s\",%d",type,ip,port);
+    ret = Esp8266SendCmd(theSendPtr,"OK");
     return ret;
     }
 
@@ -492,7 +542,6 @@ int  Esp8266ConnectServer(const char *type,const char *ip,const unsigned int por
 int Esp8266SetTransMode(void)
     {
     int ret = -1;
-    memset(UartSendBuf,0,SENDBUFSIZE);
     ret = Esp8266SendCmd("AT+CIPMODE=1","OK");
     return ret;
     }
@@ -505,7 +554,6 @@ int Esp8266SetTransMode(void)
 int Esp8266StartTransmission(void)
     {
     int ret = -1;
-    memset(UartSendBuf,0,SENDBUFSIZE);
     ret = Esp8266SendCmd("AT+CIPSEND","OK");
     return ret;
     }
@@ -518,8 +566,8 @@ int Esp8266StartTransmission(void)
 int Esp8266PingFeture(const char *ip)
 {
 int ret = -1;
-memset(UartSendBuf,0,SENDBUFSIZE);
-sprintf(UartSendBuf,"AT+PING=\"%s\"",ip);
-ret = Esp8266SendCmd(UartSendBuf,"OK");
+char *theSendPtr = GetUartSendBuf();
+sprintf(theSendPtr,"AT+PING=\"%s\"",ip);
+ret = Esp8266SendCmd(theSendPtr,"OK");
 return ret;
 }

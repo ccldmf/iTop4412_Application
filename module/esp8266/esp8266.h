@@ -19,15 +19,23 @@ enum WIFIMODE
     WIFI_ERROR = -1
     };
 
+//版本信息
+struct VERSION_INFO
+    {
+    char ATVersion[64];     // AT Version
+    char SDKVersion[64];    // SDK Version
+    char ComTime[64];       // Compile time
+    };
+
 // AP类型
 enum AP_TYPE
-{
+    {
     AP_OPEN = 0,
     AP_WEP,
     AP_WPA_PSK,
     AP_WPA2_PSK,
     AP_WPA_WPA2_PSK
-};
+    };
 
 #define AP_INFO_MAX_COUNT   20   // 最多接收可用路由信息个数
 
@@ -40,10 +48,10 @@ struct SINGLE_AP_INFO
 
 
 struct AP_ROUTER_INFO
-{
+    {
     char APCountNum;             // 接入点总数
     struct SINGLE_AP_INFO singleAPInfo[];
-};
+    };
 
 /**
  *@brief Esp8266模块初始化
@@ -75,7 +83,7 @@ int Esp8266Reseat(void);
  *@brief Esp8266查看版本信息
  *@return 成功：版本信息 失败：null
  */
-char* Esp8266CheckVersion(void);
+struct VERSION_INFO* Esp8266CheckVersion(void);
 
 /**
  *@brief Esp8266回显功能设置
