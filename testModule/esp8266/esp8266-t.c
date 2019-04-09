@@ -16,21 +16,20 @@
 
 #define RECVBUFSIZE     1024
 unsigned char g_Transmission_Flag = 0;
-extern char UartRecvBuf[RECVBUFSIZE];
 
 void *uartRecvPthreadHandle(void *arg)
     {
     int ret;
     printf("uartRecvPthreadHandle\n");
+    char *theRecvPtr = GetUartRecvBuf();
     while(1)
         {
         if(g_Transmission_Flag == 1)
             {
-            ret = UartRecvData(UartRecvBuf,RECVBUFSIZE);
+            ret = UartRecvData(theRecvPtr,RECVBUFSIZE);
             if(ret > 0)
                 {
-                printf("Recv Data:%s\n",UartRecvBuf);
-                memset(UartRecvBuf,0,RECVBUFSIZE);
+                printf("Recv Data:%s\n",theRecvPtr);
                 }
             }
         }
@@ -42,6 +41,7 @@ int main(int argc,char **argv)
     char c;
     char data[50];
     char *ptr;
+    struct VERSION_INFO* theVersion;
     pthread_t uartRecvPthread;
     ret = UartInit("/dev/ttySAC0",115200,8,'N',1);
     if(ret < 0)
@@ -56,12 +56,14 @@ int main(int argc,char **argv)
         UartClose();
         return -1;
         }
+
+        /*
     if (pthread_create(&uartRecvPthread, NULL, uartRecvPthreadHandle, NULL) == -1)
         {
         printf("create error!\n");
         return 1;
         }
-
+        */
 
     while(1)
         {
@@ -91,14 +93,15 @@ int main(int argc,char **argv)
                 }
                 break;
         case '3':                   //版本信息
-            ptr = Esp8266CheckVersion();
-            if(ptr == NULL)
+
+            theVersion = Esp8266CheckVersion();
+            if(theVersion == NULL)
                 {
                 printf("check version error\n");
                 }
             else
                 {
-                printf("Version Info: %s\n",ptr);
+                printf("Version Info: %s\n",theVersion->ATVersion);
                 }
                 break;
         case '4':                   //回显设置,即设置发送的命令是否再次显示
