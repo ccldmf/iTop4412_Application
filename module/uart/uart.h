@@ -19,6 +19,7 @@
 #include<errno.h>      /*错误号定义*/
 #include<string.h>
 
+
 /**
  *@brief 串口初始化
  *@param devname;设备名 nSpeed:波特率 nBits:数据位
@@ -26,6 +27,18 @@
  *@return 成功：0 失败：-1
  */
 int UartInit(const char *devname,int nSpeed,int nBits,char nEvent,int nStop);
+
+/**
+ *@brief 获得串口发送数据地址
+ *@return 成功：发送地址 失败：NULL
+ */
+char *GetUartSendBuf(void);
+
+/**
+ *@brief 获得串口接收数据地址
+ *@return 成功：接收地址 失败：NULL
+ */
+char *GetUartRecvBuf(void);
 
 /**
  *@brief 串口数据发送

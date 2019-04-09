@@ -24,6 +24,14 @@
 //串口文件描述符
 static int g_uart_fd = -1;
 
+#define RECVBUFSIZE     1024
+#define SENDBUFSIZE     1024
+
+//定义串口接收数据存放空间
+static char UartRecvBuf[RECVBUFSIZE];
+//定义串口发送数据存放空间
+static char UartSendBuf[SENDBUFSIZE];
+
 /**
  *@brief 配置出口相关参数
  *@param devname;设备名 nSpeed:波特率 nBits:数据位
@@ -149,6 +157,28 @@ static int set_opt(int fd,int nSpeed, int nBits, char nEvent, int nStop)
     }
 
 /**
+ *@brief 接收串口数据线程
+ */
+static void *UartRecvPthreadHandle(void *arg)
+    {
+    int ret;
+    printf("uartRecvPthreadHandle\n");
+    while(1)
+        {
+        ret = UartRecvData(UartRecvBuf,RECVBUFSIZE);
+        if(ret > 0)
+            {
+            printf("Recv Data:%s\n",UartRecvBuf);
+            }
+        else
+            {
+            memset(UartRecvBuf,0,RECVBUFSIZE);
+            }
+        sleep(1);
+        }
+    }
+
+/**
  *@brief 串口初始化
  *@param devname;设备名 nSpeed:波特率 nBits:数据位
  *@param nEvent:奇偶校验位 nStop:停止位
@@ -157,6 +187,7 @@ static int set_opt(int fd,int nSpeed, int nBits, char nEvent, int nStop)
 int UartInit(const char *devname,int nSpeed,int nBits,char nEvent,int nStop)
     {
     int ret;
+    pthread_t uartRecvPthread;
     g_uart_fd = open(devname,O_RDWR|O_NOCTTY);
     if(g_uart_fd < 0)
         {
@@ -173,7 +204,32 @@ int UartInit(const char *devname,int nSpeed,int nBits,char nEvent,int nStop)
         printf("set uart param error\n");
         return -1;
         }
+
+    if (pthread_create(&uartRecvPthread, NULL, UartRecvPthreadHandle, NULL) == -1)
+        {
+        printf("create error!\n");
+        return 1;
+        }
     return 0;
+    }
+
+/**
+ *@brief 获得串口发送数据地址
+ *@return 成功：发送地址 失败：NULL
+ */
+char *GetUartSendBuf(void)
+    {
+    memset(UartSendBuf,0,SENDBUFSIZE);
+    return UartSendBuf;
+    }
+
+/**
+ *@brief 获得串口接收数据地址
+ *@return 成功：接收地址 失败：NULL
+ */
+char *GetUartRecvBuf(void)
+    {
+    return UartRecvBuf;
     }
 
 /**
@@ -184,6 +240,11 @@ int UartInit(const char *devname,int nSpeed,int nBits,char nEvent,int nStop)
 int UartSendData(const char *data,int len)
     {
     int ret;
+    if(len > SENDBUFSIZE)
+        {
+        return -1;
+        }
+
     ret = write(g_uart_fd,data,len);
     if(ret == len)
         {
@@ -211,8 +272,8 @@ int UartRecvData(char *data,int len)
     FD_ZERO(&fs_read);
     FD_SET(g_uart_fd,&fs_read);
 
-    time.tv_sec = 3;
-    time.tv_usec = 0;
+    time.tv_sec = 1;
+    time.tv_usec = 600;
 
     fs_sel = select(g_uart_fd+1,&fs_read,NULL,NULL,&time);
     if(fs_sel)                  //有数据
