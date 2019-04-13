@@ -35,7 +35,7 @@ int UartInit(const char *devname,int nSpeed,int nBits,char nEvent,int nStop);
 char *GetUartSendBuf(void);
 
 /**
- *@brief 获得串口接收数据地址
+ *@brief 获得串口接收可用数据地址
  *@return 成功：接收地址 失败：NULL
  */
 char *GetUartRecvBuf(void);
@@ -53,6 +53,12 @@ int UartSendData(const char *data,int len);
  *@return 返回实际接收到的数据长度
  */
 int UartRecvData(char *data,int len);
+
+/**
+ *@brief 释放不再使用的接收数据空间
+ *@return 无
+ */
+void UartRecvFree(void);
 
 /**
  *@brief 串口关闭
