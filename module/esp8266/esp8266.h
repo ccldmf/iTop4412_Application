@@ -27,32 +27,6 @@ struct VERSION_INFO
     char ComTime[64];       // Compile time
     };
 
-// AP类型
-enum AP_TYPE
-    {
-    AP_OPEN = 0,
-    AP_WEP,
-    AP_WPA_PSK,
-    AP_WPA2_PSK,
-    AP_WPA_WPA2_PSK
-    };
-
-#define AP_INFO_MAX_COUNT   20   // 最多接收可用路由信息个数
-
-struct SINGLE_AP_INFO
-        {
-        enum AP_TYPE Type;       // 接入点类型
-        char Rssi;               // 信号强度
-        char Ssid[64];           // 接入点名称
-        };
-
-
-struct AP_ROUTER_INFO
-    {
-    char APCountNum;             // 接入点总数
-    struct SINGLE_AP_INFO singleAPInfo[];
-    };
-
 /**
  *@brief Esp8266模块初始化
  *@return 成功：0 失败：-1
@@ -128,13 +102,7 @@ int Esp8266SetRouter(const char *ssid,const char *password);
  *@brief Esp8266查看连接路由器
  *@return 成功:返回选择的AP 失败：NULL
  */
-char* Esp8266CheckRouter(void);
-
-/**
- *@brief Esp8266查看当前可用的AP路由器
- *@return 成功：AP信息 失败：NULL
- */
-struct AP_ROUTER_INFO* Esp8266CheckUsefulAPRouter(void);
+char* Esp8266CheckConnectRouter(void);
 
 /**
  *@brief Esp8266退出与路由器的AP连接
@@ -159,31 +127,6 @@ int Esp8266SetDHCP(unsigned char mode,unsigned char en);
 int Esp8266SetSTAAutoConnect(unsigned char en);
 
 /**
- *@brief Esp8266设置AP的MAC地址
- *@param mac:MAC地址
- *@return 成功：0 失败：-1
- */
-int Esp8266SetAPMacAddress(char*mac);
-
-/**
- *@brief Esp8266获取AP的MAC地址
- *@return 成功：MAC地址 失败：NULL
- */
-char* Esp8266GetAPMacAddress(void);
-
-/**
- *@brief Esp8266设置AP模式的IP地址
- *@return 成功：0 失败：-1
- */
-int Esp8266SetAPIPAddress(char *ip);
-
-/**
- *@brief Esp8266获取AP模式的IP地址
- *@return 成功：IP地址 失败：NULL
- */
-char* Esp8266GetAPIPAddress(void);
-
-/**
  *@brief Esp8266模块发送数据
  *@param cmd:发送的数据字符串,此时不需要添加回车
  *@param ack:期待的应答结果，为空，则表示不需要等待应答
@@ -194,9 +137,9 @@ int Esp8266SendData(const char *data,const char *ack);
 /**
  *@brief Esp8266模块IP获取
  *@param 存放IP地址
- *@return 成功：0 失败：-1
+ *@return 成功：IP地址 失败：NULL
  */
-int Esp8266GetLocalIPAddr(char *ip);
+char* Esp8266GetLocalIPAddr(void);
 
 /**
  *@brief Esp8266模块连接到服务器
@@ -205,13 +148,12 @@ int Esp8266GetLocalIPAddr(char *ip);
  */
 int  Esp8266ConnectServer(const char *type,const char *ip,const unsigned int port);
 
-
 /**
  *@brief Esp8266模块设置开启透传模式
- *@param 无
+ *@param mode：0：关闭透传   1：开启透传
  *@return 成功：0 失败：-1
  */
-int Esp8266SetTransMode(void);
+int Esp8266SetTransMode(int mode);
 
 /**
  *@brief Esp8266模块开始透传
@@ -219,6 +161,20 @@ int Esp8266SetTransMode(void);
  *@return 成功：0 失败：-1
  */
 int Esp8266StartTransmission(void);
+
+/**
+ *@brief Esp8266退出透传模式
+ *@param 无
+ *@return 无
+ */
+void Esp8266QuitTransmission(void);
+
+/**
+ *@brief Esp8266断开TCP或者UDP连接
+ *@param 无
+ *@return 成功：0 失败：-1
+ */
+int Esp8266DisableConnect(void);
 
 /**
  *@brief Esp8266模块ping功能
