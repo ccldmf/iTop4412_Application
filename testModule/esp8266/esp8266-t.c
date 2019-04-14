@@ -35,7 +35,7 @@ void *uartRecvPthreadHandle(void *arg)
             }
         }
     }
-// 7 2 9 G C P N S
+// 7 2 9 g h i j m
 int main(int argc,char **argv)
     {
     int ret;
