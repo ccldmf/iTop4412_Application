@@ -12,13 +12,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include "bigiot.h"
-#include "../tcp/tcp.h"
-#define USETCP
 
 #ifdef USETCP
 #include "../tcp/tcp.h"
 #else
-
+#include "../uart/uart.h"
 #endif
 
 /**
@@ -49,7 +47,7 @@ void BigiotLogin(const char *id,const char *apikey)
 #ifdef USETCP
     TcpSendData((const char *)ptr,len);
 #else
-
+    UartSendData(ptr,len);
 #endif
 
     }
@@ -86,7 +84,7 @@ void BigiotSendData(const char *id,const char *data_id,const char *value)
 #ifdef USETCP
     ret = TcpSendData(ptr,len);
 #else
-
+    UartSendData(ptr,len);
 #endif
     }
 
@@ -101,7 +99,7 @@ int BigiotRecvData(char *data,int len)
 #ifdef USETCP
     ret = TcpRecvdData(data,len);
 #else
-
+    UartRecvData(data,len);
 #endif
     *(data+ret) = '\0';     //在末尾添加字符串结束标志
     return ret;
@@ -141,6 +139,7 @@ void BigiotIsOnLine(const char *id,enum IDTYPE type)
 #ifdef USETCP
     TcpSendData(ptr,strlen(ptr));
 #else
+    UartSendData(ptr,strlen(ptr));
 #endif
     }
 
@@ -155,6 +154,7 @@ void BigiotStatus(void)
 #ifdef USETCP
     TcpSendData(ptr,strlen(ptr));
 #else
+    UartSendData(ptr,strlen(ptr));
 #endif
     }
 
@@ -169,7 +169,7 @@ void BigiotTime(void)
 #ifdef USETCP
     TcpSendData(ptr,strlen(ptr));
 #else
-
+    UartSendData(ptr,strlen(ptr));
 #endif
     }
 
@@ -200,7 +200,7 @@ void BigiotAlertMessage(const char *message,const char *type)
 #ifdef USETCP
     TcpSendData(ptr,strlen(ptr));
 #else
-
+    UartSendData(ptr,strlen(ptr));
 #endif
 
     }
@@ -232,6 +232,6 @@ void BigiotLogout(const char *id,const char *apikey)
 #ifdef USETCP
     TcpSendData(ptr,strlen(ptr));
 #else
-
+    UartSendData(ptr,strlen(ptr));
 #endif
     }

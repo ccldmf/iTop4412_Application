@@ -11,6 +11,9 @@
 #ifndef _BIGIOT_H
 #define _BIGIOT_H
 
+//#define USETCP
+#define USEUART
+
 //ID类型
 enum IDTYPE
     {
