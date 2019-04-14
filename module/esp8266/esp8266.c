@@ -359,10 +359,10 @@ char* Esp8266GetLocalIPAddr(void)
     {
     int ret = -1;
     char *ptr,*ptr2;
+    char *theRecvPtr;
     ret = Esp8266SendCmd("AT+CIFSR","OK");
-    if(ret == 0)
+    if(ret == 0 && (NULL != (theRecvPtr = GetUartRecvBuf())))
         {
-        char *theRecvPtr = GetUartRecvBuf();
         ptr = strstr(theRecvPtr,"CIFSR:STAIP");
         if(ptr != NULL)
             {
@@ -372,10 +372,10 @@ char* Esp8266GetLocalIPAddr(void)
             memcpy(mReturnDataBuf,ptr,(ptr2-ptr)-1);
             ptr = mReturnDataBuf;
             }
-        else                                        //未找到指定字符串
-            {
-            ptr = NULL;
-            }
+        }
+    else                                        //未找到指定字符串
+        {
+        ptr = NULL;
         }
     UartRecvFree();
     return ptr;
