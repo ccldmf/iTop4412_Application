@@ -21,8 +21,8 @@ Purpose     : Windows manager include
 #define WM_H
 
 
-#include "GUI_ConfDefaults.h"
-#include "GUIType.h"      /* Needed because of typedefs only */
+#include "../Core/GUI_ConfDefaults.h"
+#include "../Core/GUIType.h"      /* Needed because of typedefs only */
 #include "WM_GUI.h"       /* Some functions needed by GUI routines */
 
 #if defined(__cplusplus)
@@ -177,7 +177,7 @@ The following is the list of windows messages.
 
 #define WM_NOTIFY_CLIENTCHANGE      37      /* Client area may have changed */
 #define WM_NOTIFY_PARENT            38      /* Notify parent. Information is detailed as notification code */
-#define WM_NOTIFY_PARENT_REFLECTION 39      /* Notify parent reflection. 
+#define WM_NOTIFY_PARENT_REFLECTION 39      /* Notify parent reflection.
                                                Sometimes send back as a result of the WM_NOTIFY_PARENT message
                                                to let child react on behalf of its parent.
                                                Information is detailed as notification code */
@@ -530,7 +530,7 @@ void WM_DIAG_EnableInvalidationColoring(int OnOff);
 
 #if defined(__cplusplus)
 }
-#endif 
+#endif
 
 #endif   /* WM_H */
 

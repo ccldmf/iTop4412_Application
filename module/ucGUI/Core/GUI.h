@@ -512,6 +512,9 @@ void         GUI_SaveContext   (      GUI_CONTEXT* pContext);
 void         GUI_RestoreContext(const GUI_CONTEXT* pContext);
 
 
+unsigned char *GetLcdMmapBuf(void);
+
+
 /*********************************************************************
 *
 *           Rectangle helper functions
@@ -545,7 +548,7 @@ int  GUI__SetText(GUI_HMEM* phText, const char* s);
 *
 **********************************************************************
 */
- 
+
 GUI_COLOR GUI_GetBkColor     (void);
 GUI_COLOR GUI_GetColor       (void);
 int       GUI_GetBkColorIndex(void);
@@ -1053,7 +1056,7 @@ void GUI_WaitEvent(void);
 
 /*********************************************************************
 *
-*          PID  (Pointer input device ... mouse/touch) 
+*          PID  (Pointer input device ... mouse/touch)
 */
 
 void GUI_PID_StoreState(const GUI_PID_STATE *pState);
@@ -1417,7 +1420,7 @@ extern const GUI_BITMAP_METHODS GUI_BitmapMethodsM565;
 #define GUI_SelLayer       GUI_SelectLayer
 #if defined(__cplusplus)
 }
-#endif 
+#endif
 
 #endif   /* ifdef GUI_H */
 

@@ -29,7 +29,7 @@ all:
 .PHONY:guilib
 guilib:
 	$(CC) rv libucgui.a $(LIBOBJS)
-	cp libucgui.a ../test-ucGUI/
+	cp libucgui.a /home/cc/share/tmp
 	@echo "Finished Create libucgui.a!!!"
 
 

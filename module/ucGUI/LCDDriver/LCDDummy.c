@@ -39,8 +39,7 @@ Version-Date---Author-Explanation
 #include "GUI_Private.h"
 #include "GUIDebug.h"
 
-#include "lcd_framebuffer.h"
-#include "drawGraphics.h"
+#include "framebuffer.h"
 
 #if (LCD_CONTROLLER == -1) \
     && (!defined(WIN32) | defined(LCD_SIMCONTROLLER))
@@ -550,9 +549,7 @@ void LCD_Off (void) {
 *   Initialises the LCD-controller.
 */
 int  LCD_L0_Init(void) {
-  //LCD_INIT_CONTROLLER();
   LcdInit();
-  LcdMmap();
 
   return 0;
 }
