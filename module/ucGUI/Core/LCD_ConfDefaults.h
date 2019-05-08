@@ -744,7 +744,11 @@ Purpose     : Valid LCD configuration and defaults
 #if (LCD_BITSPERPIXEL <= 8) && (GUI_NUM_LAYERS < 2)
   #define LCD_PIXELINDEX U8
 #else
-  #define LCD_PIXELINDEX U16
+  #if (LCD_BITSPERPIXEL < 24)
+    #define LCD_PIXELINDEX U16
+  #else
+    #define LCD_PIXELINDEX U32
+  #endif
 #endif
 
 

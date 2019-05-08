@@ -155,6 +155,16 @@ Purpose     : Color conversion routines for LCD-drivers
   #define COLOR2INDEX(Color) LCD_Color2Index_8666_1(Color)
   #define INDEX2COLOR(Index) LCD_Index2Color_8666_1(Index)
   #define GETINDEXMASK()     LCD_GetIndexMask_8666_1()
+
+#elif (LCD_FIXEDPALETTE == 888) && (LCD_SWAP_RB == 0)
+  #define COLOR2INDEX(Color) LCD_Color2Index_888(Color)
+  #define INDEX2COLOR(Index) LCD_Index2Color_888(Index)
+  #define GETINDEXMASK()     LCD_GetIndexMask_888()
+#elif (LCD_FIXEDPALETTE == 888) && (LCD_SWAP_RB == 1)
+  #define COLOR2INDEX(Color) LCD_Color2Index_M888(Color)
+  #define INDEX2COLOR(Index) LCD_Index2Color_M888(Index)
+  #define GETINDEXMASK()     LCD_GetIndexMask_M888()
+
 #else
   #error Unsupported color mode
 #endif

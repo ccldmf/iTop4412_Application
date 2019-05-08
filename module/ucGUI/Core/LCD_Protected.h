@@ -30,9 +30,9 @@ Purpose     : Internals of the LCD level
 */
 
 typedef struct {
-  int              NumEntries; 
-  const LCD_COLOR* pPalEntries; 
-} LCD_PHYSPALETTE; 
+  int              NumEntries;
+  const LCD_COLOR* pPalEntries;
+} LCD_PHYSPALETTE;
 
 /*********************************************************************
 *
@@ -71,6 +71,8 @@ unsigned LCD_Color2Index_556     (LCD_COLOR Color);
 unsigned LCD_Color2Index_655     (LCD_COLOR Color);
 unsigned LCD_Color2Index_8666    (LCD_COLOR Color);
 unsigned LCD_Color2Index_8666_1  (LCD_COLOR Color);
+unsigned LCD_Color2Index_888     (LCD_COLOR Color);
+unsigned LCD_Color2Index_M888    (LCD_COLOR Color);
 unsigned LCD_Color2Index_M111    (LCD_COLOR Color);
 unsigned LCD_Color2Index_M222    (LCD_COLOR Color);
 unsigned LCD_Color2Index_M233    (LCD_COLOR Color);
@@ -102,6 +104,10 @@ LCD_COLOR LCD_Index2Color_556     (int Index);
 LCD_COLOR LCD_Index2Color_655     (int Index);
 LCD_COLOR LCD_Index2Color_8666    (int Index);
 LCD_COLOR LCD_Index2Color_8666_1  (int Index);
+LCD_COLOR LCD_Index2Color_888     (int Index);
+LCD_COLOR LCD_Index2Color_M888    (int Index);
+
+
 LCD_COLOR LCD_Index2Color_M111    (int Index);
 LCD_COLOR LCD_Index2Color_M222    (int Index);
 LCD_COLOR LCD_Index2Color_M233    (int Index);

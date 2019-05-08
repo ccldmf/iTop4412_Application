@@ -444,6 +444,7 @@ which ever one you like best.
 typedef union {
   U8  aColorIndex8[2];
   U16 aColorIndex16[2];
+  U32 aColorIndex32[2];
 } LCD_COLORINDEX_UNION;
 
 typedef struct {

@@ -69,10 +69,14 @@ const tLCDDEV_APIList* LCD_SetAPI(const tLCDDEV_APIList* pAPI, int Index);
   #define LCD_BKCOLORINDEX GUI_Context.LCD.aColorIndex8[0]
   #define LCD_COLORINDEX   GUI_Context.LCD.aColorIndex8[1]
   #define LCD_ACOLORINDEX  GUI_Context.LCD.aColorIndex8
-#else
+#elif (LCD_BITSPERPIXEL <= 16)
   #define LCD_BKCOLORINDEX GUI_Context.LCD.aColorIndex16[0]
   #define LCD_COLORINDEX   GUI_Context.LCD.aColorIndex16[1]
   #define LCD_ACOLORINDEX  GUI_Context.LCD.aColorIndex16
+#else
+  #define LCD_BKCOLORINDEX GUI_Context.LCD.aColorIndex32[0]
+  #define LCD_COLORINDEX   GUI_Context.LCD.aColorIndex32[1]
+  #define LCD_ACOLORINDEX  GUI_Context.LCD.aColorIndex32
 #endif
 
 extern LCD_PIXELINDEX LCD__aConvTable[LCD_MAX_LOG_COLORS];
