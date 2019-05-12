@@ -5,20 +5,48 @@
  * @version
  * @date     Mon 15 Jan 2018 21:44:50 CST
  * CST
- * @mail     13568859409@163.com
  * @note
  */
 
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <sys/types.h>
+/**
+ *@brief 摄像头初始化
+ *@param devName:设备名 w:宽度  h:高度
+ *@return 0：成功  -1：失败
+ */
+int CameraInit(const char *devName,int w,int h);
 
-void Camera(char *DEV_NAME,int w,int h);
-int OpenDevice();
-void CloseDevice();
-int GetBuffer(unsigned char *image);
-unsigned int getImageSize();
+/**
+ *@brief 获得图像大小
+ *@return  图像大小
+ */
+int GetPictureSize();
+
+/**
+ *@brief 获得一帧图像
+ *@return  0：成功     -1：失败
+ */
+int GetPicture(char *);
+
+/**
+ *@brief 开始图像传输
+ *@return  0：成功     -1：失败
+ */
+int StartCapturing();
+
+/**
+ *@brief 停止图像传输
+ *@return  0：成功     -1：失败
+ */
+void StopCapturing();
+
+/**
+ *@brief 关闭摄像头
+ *@return  无
+ */
+void CameratClose();
 
 #endif // CAMERA_H
 
