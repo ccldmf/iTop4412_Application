@@ -20,7 +20,7 @@ Purpose     : Frame window include
 #ifndef FRAMEWIN_H
 #define FRAMEWIN_H
 
-#include "WM.h"
+#include "../WM/WM.h"
 #if GUI_WINSUPPORT
 #include "DIALOG_Intern.h"      /* Req. for Create indirect data structure */
 
@@ -160,10 +160,10 @@ void            FRAMEWIN_SetDefaultTextColor  (unsigned Index, GUI_COLOR Color);
 */
 #define         FRAMEWIN_SetDefaultCaptionSize(Height)       FRAMEWIN_SetDefaultTitleHeight(Height)
 #define         FRAMEWIN_GetDefaultCaptionSize()             FRAMEWIN_GetDefaultTitleHeight()
-#define         FRAMEWIN_CreateButton(hObj, Flags, Off, Id)  FRAMEWIN_AddButton(hObj, Flags, Off, Id) 
+#define         FRAMEWIN_CreateButton(hObj, Flags, Off, Id)  FRAMEWIN_AddButton(hObj, Flags, Off, Id)
 #define         FRAMEWIN_CreateCloseButton(hObj, Flags, Off) FRAMEWIN_AddCloseButton(hObj, Flags, Off)
-#define         FRAMEWIN_CreateMaxButton(hObj, Flags, Off)   FRAMEWIN_AddMaxButton(hObj, Flags, Off)  
-#define         FRAMEWIN_CreateMinButton(hObj, Flags, Off)   FRAMEWIN_AddMinButton(hObj, Flags, Off)  
+#define         FRAMEWIN_CreateMaxButton(hObj, Flags, Off)   FRAMEWIN_AddMaxButton(hObj, Flags, Off)
+#define         FRAMEWIN_CreateMinButton(hObj, Flags, Off)   FRAMEWIN_AddMinButton(hObj, Flags, Off)
 
 #if defined(__cplusplus)
   }

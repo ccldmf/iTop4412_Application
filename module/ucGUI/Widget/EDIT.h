@@ -20,7 +20,7 @@ Purpose     : EDIT include
 #ifndef EDIT_H
 #define EDIT_H
 
-#include "WM.h"
+#include "../WM/WM.h"
 #include "DIALOG_Intern.h"      /* Req. for Create indirect data structure */
 
 #if GUI_WINSUPPORT

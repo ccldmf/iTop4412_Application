@@ -20,10 +20,10 @@ Purpose     : TEXT include
 #ifndef TEXT_H
 #define TEXT_H
 
-#include "WM.h"
+#include "../WM/WM.h"
 #include "DIALOG_Intern.h"      /* Req. for Create indirect data structure */
 #include "WIDGET.h"      /* Req. for Create indirect data structure */
-#include "GUIDebug.h" /* Req. for GUI_DEBUG_LEVEL */
+#include "../Core/GUIDebug.h" /* Req. for GUI_DEBUG_LEVEL */
 
 #if GUI_WINSUPPORT
 
@@ -128,7 +128,7 @@ typedef struct {
   GUI_COLOR BkColor;
   #if GUI_DEBUG_LEVEL >= GUI_DEBUG_LEVEL_CHECK_ALL
     int DebugId;
-  #endif  
+  #endif
 } TEXT_Obj;
 
 #define TEXT_H2P(h) (TEXT_Obj*) GUI_ALLOC_h2p(h)

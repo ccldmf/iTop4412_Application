@@ -23,7 +23,7 @@ None
 #ifndef DIALOG_INTERN_H
 #define DIALOG_INTERN_H
 
-#include "WM.h"
+#include "../WM/WM.h"
 
 #if GUI_WINSUPPORT
 
@@ -54,7 +54,7 @@ struct GUI_WIDGET_CREATE_INFO_struct {
   I16 Id;                                /* ID ... should be unique in a dialog */
   I16 x0, y0, xSize, ySize;              /* Define position and size */
   U16 Flags;                             /* Widget specific create flags (opt.) */
-  I32 Para;                              /* Widget specific parameter (opt.) */ 
+  I32 Para;                              /* Widget specific parameter (opt.) */
 };
 
 /*********************************************************************

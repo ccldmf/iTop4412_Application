@@ -20,7 +20,7 @@ Purpose     : SCROLLBAR include
 #ifndef SCROLLBAR_H
 #define SCROLLBAR_H
 
-#include "WM.h"
+#include "../WM/WM.h"
 #include "DIALOG_Intern.h"      /* Req. for Create indirect data structure */
 #include "WIDGET.h"
 

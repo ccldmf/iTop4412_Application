@@ -24,7 +24,7 @@ Purpose     : GUI internal declarations
 #include "LCD_Protected.h"
 #include "GUIDebug.h"
 #if GUI_WINSUPPORT
-  #include "WM_GUI.h"
+  #include "../WM/WM_GUI.h"
 #endif
 
 #if defined(__cplusplus)
@@ -315,7 +315,7 @@ typedef int  WM_tfHandlePID(void);
 
 /************************************************************
 *
-*        Cursors 
+*        Cursors
 *
 *************************************************************
 */
@@ -353,7 +353,7 @@ GUI_COLOR GUI_GetBitmapPixelColor(const GUI_BITMAP GUI_UNI_PTR * pBMP, unsigned 
 
 #if defined(__cplusplus)
 }
-#endif 
+#endif
 
 #endif   /* Avoid multiple inclusion */
 

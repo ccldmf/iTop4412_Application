@@ -21,7 +21,7 @@ Purpose     : Windows manager internal include
 #define WM_INTERN_H            /* Make sure we only include it once */
 
 #include "WM.h"
-#include "GUI_Protected.h"       /* For GUI_Context */
+#include "../Core/GUI_Protected.h"       /* For GUI_Context */
 
 
 #if defined(__cplusplus)

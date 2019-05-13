@@ -24,7 +24,7 @@ Purpose     : Widget interface
 extern "C" {     /* Make sure we have C-declarations in C++ programs */
 #endif
 
-#include "WM_Intern.h"  /* Window manager, including some internals, which speed things up */
+#include "../WM/WM_Intern.h"  /* Window manager, including some internals, which speed things up */
 
 #if GUI_WINSUPPORT
 

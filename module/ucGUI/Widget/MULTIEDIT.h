@@ -20,7 +20,7 @@ Purpose     : MULTIEDIT include
 #ifndef MULTIEDIT_H
 #define MULTIEDIT_H
 
-#include "WM.h"
+#include "../WM/WM.h"
 #include "DIALOG.h"      /* Req. for Create indirect data structure */
 
 #if GUI_WINSUPPORT
@@ -67,9 +67,9 @@ typedef WM_HMEM MULTIEDIT_HANDLE;
 MULTIEDIT_HANDLE MULTIEDIT_CreateEx      (int x0, int y0, int xsize, int ysize, WM_HWIN hParent, int WinFlags, int ExFlags,
                                           int Id, int BufferSize, const char* pText);
 MULTIEDIT_HANDLE MULTIEDIT_Create        (int x0, int y0, int xsize, int ysize, WM_HWIN hParent,
-                                          int Id, int Flags, int ExFlags, const char* pText, 
+                                          int Id, int Flags, int ExFlags, const char* pText,
                                           int BufferSize);
-MULTIEDIT_HANDLE MULTIEDIT_CreateIndirect(const GUI_WIDGET_CREATE_INFO* pCreateInfo, 
+MULTIEDIT_HANDLE MULTIEDIT_CreateIndirect(const GUI_WIDGET_CREATE_INFO* pCreateInfo,
                                           WM_HWIN hWinParent, int x0, int y0, WM_CALLBACK* cb);
 
 /*********************************************************************

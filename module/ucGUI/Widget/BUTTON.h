@@ -20,7 +20,7 @@ Purpose     : BUTTON public header file (API)
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include "WM.h"
+#include "../WM/WM.h"
 #include "DIALOG_Intern.h"      /* Req. for Create indirect data structure */
 #include "WIDGET.h"
 

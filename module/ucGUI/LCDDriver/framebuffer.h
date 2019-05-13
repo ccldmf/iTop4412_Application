@@ -47,6 +47,8 @@ int GetLcdScreenWidthAndHeight(void);
 
 /**
  *@brief 获得LCD映射到内存的操作地址
+ *@desc  该函数定义放置到GUI.h中了，
+ *       用于应用层直接使用
  *@return 成功：映射地址 失败：NULL
  */
 //unsigned char *GetLcdMmapBuf(void);

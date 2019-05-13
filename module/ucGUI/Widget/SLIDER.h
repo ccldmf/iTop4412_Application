@@ -20,7 +20,7 @@ Purpose     : SLIDER include
 #ifndef SLIDER_H
 #define SLIDER_H
 
-#include "WM.h"
+#include "../WM/WM.h"
 #include "DIALOG_Intern.h"      /* Req. for Create indirect data structure */
 #include "WIDGET.h"      /* Req. for Create indirect data structure */
 

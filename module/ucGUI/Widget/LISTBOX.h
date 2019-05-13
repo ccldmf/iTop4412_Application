@@ -20,7 +20,7 @@ Purpose     : LISTBOX widget include
 #ifndef LISTBOX_H
 #define LISTBOX_H
 
-#include "WM.h"
+#include "../WM/WM.h"
 #include "WIDGET.h"             /* Req. for WIDGET_DRAW_ITEM_FUNC */
 #include "DIALOG_Intern.h"      /* Req. for Create indirect data structure */
 

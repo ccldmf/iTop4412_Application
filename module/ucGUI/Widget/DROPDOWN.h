@@ -20,7 +20,7 @@ Purpose     : Multiple choice object include
 #ifndef DROPDOWN_H
 #define DROPDOWN_H
 
-#include "WM.h"
+#include "../WM/WM.h"
 #include "DIALOG_Intern.h"      /* Req. for Create indirect data structure */
 
 #if GUI_WINSUPPORT

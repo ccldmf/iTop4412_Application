@@ -20,7 +20,7 @@ Purpose     : CHECKBOX include
 #ifndef CHECKBOX_H
 #define CHECKBOX_H
 
-#include "WM.h"
+#include "../WM/WM.h"
 #include "DIALOG_Intern.h"      /* Req. for Create indirect data structure */
 
 #if GUI_WINSUPPORT

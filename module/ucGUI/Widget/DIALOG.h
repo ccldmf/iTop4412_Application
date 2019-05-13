@@ -23,9 +23,9 @@ None
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include "WM.h"
+#include "../WM/WM.h"
 #include "BUTTON.h"
-#include "CHECKBOX.h"
+#include "../Widget/CHECKBOX.h"
 #include "DROPDOWN.h"
 #include "EDIT.h"
 #include "FRAMEWIN.h"
