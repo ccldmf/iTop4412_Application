@@ -512,8 +512,14 @@ const char * GUI_GetVersionString(void);
 void         GUI_SaveContext   (      GUI_CONTEXT* pContext);
 void         GUI_RestoreContext(const GUI_CONTEXT* pContext);
 
-
+/*********************************************************************
+*
+*           LCD screen operation function
+*
+**********************************************************************
+*/
 unsigned char *GetLcdMmapBuf(void);
+
 
 
 /*********************************************************************

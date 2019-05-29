@@ -29,6 +29,10 @@ Purpose     : Core routines
   #include "WM.h"
 #endif
 
+#if GUI_SUPPORT_TOUCH
+  #include "../TouchScreen/touchScreen.h"
+#endif
+
 /*********************************************************************
 *
 *       Static data
@@ -167,6 +171,16 @@ int GUI_Init(void) {
   }
   GUI_Clear();
   #endif
+
+  #if GUI_SUPPORT_TOUCH
+  r = TouchScreenInit();
+  if ( r != 0)
+      {
+      printf( "TouchScreenInit error\n" );
+      }
+  //GUI_CURSOR_Show();
+  #endif
+
   return r;
 }
 
