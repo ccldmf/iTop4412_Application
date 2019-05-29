@@ -172,6 +172,36 @@ int LcdDrawPoint(unsigned int x,unsigned int y,unsigned int color)
     }
 
 /**
+ *@brief LCD画横线
+ *@param startX:横坐标 y:纵坐标
+ *       endX:横坐标 color:颜色
+ *@return 成功：0 失败：-1
+ */
+int LcdDrawHLineExt(unsigned int startX,unsigned int y,unsigned int endX ,unsigned int color)
+    {
+    int theWidth,theHeight;
+    int theTmp = GetLcdScreenWidthAndHeight();
+    theWidth   = (theTmp >> 16) & 0xFFFF;
+    theHeight  = theTmp & 0x0000FFFF;
+    if ( y > theHeight || startX > theWidth || endX > theWidth )
+        {
+        printf("LcdDrawHLineExt parameters error\n");
+        return -1;
+        }
+    else
+        {
+        unsigned char *lcd_buf = GetLcdMmapBuf();
+        int * ptr = (int*)lcd_buf + theWidth * y ;
+        for(;startX <= endX;startX++)
+            {
+            *(ptr + startX) = color;
+            }
+        return 0;
+        }
+    }
+
+
+/**
  *@brief LCD关闭
  */
 void LcdClose(void)

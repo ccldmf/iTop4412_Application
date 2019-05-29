@@ -61,6 +61,14 @@ int GetLcdScreenWidthAndHeight(void);
 int LcdDrawPoint(unsigned int x,unsigned int y,unsigned int color);
 
 /**
+ *@brief LCD画横线
+ *@param x1:横坐标 y:纵坐标
+ *       x2:横坐标 color:颜色
+ *@return 成功：0 失败：-1
+ */
+int LcdDrawHLineExt(unsigned int x1,unsigned int y,unsigned int x2 ,unsigned int color);
+
+/**
  *@brief LCD关闭
  */
 void LcdClose(void);

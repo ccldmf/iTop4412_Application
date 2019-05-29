@@ -441,9 +441,7 @@ void LCD_L0_DrawHLine  (int x0, int y,  int x1) {
       LCD_L0_XorPixel(x0, y);
     }
   } else {
-    for (; x0 <= x1; x0++) {
-      LCD_L0_SetPixelIndex(x0, y, LCD_COLORINDEX);
-    }
+    LcdDrawHLineExt(x0,y,x1,LCD_COLORINDEX);
   }
 }
 
