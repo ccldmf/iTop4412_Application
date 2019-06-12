@@ -288,10 +288,42 @@ int GetPictureSize()
     }
 
 /**
+ *@brief 将抓取到的一帧数据设置为指定颜色
+ *@return  无
+ */
+static void ChangeFrameColor( char *des , char *src , enum FrameColor color )
+    {
+    int *des_ptr  = ( char *)des;
+    char *src_ptr = ( short *)src;
+    int i,j;
+    int width  = 450;
+    int height = 200;
+
+    if ( color == COLOR_RGB )
+        {
+
+        }
+    else if ( color == COLOR_COLOR )
+        {
+
+        }
+    else
+        {
+        for ( i = 0 ; i < height ; i++ )
+            {
+            for ( j = 0 ; j < width ; j++ )
+                {
+                *( des_ptr + i *480 + j ) = ( * ( src_ptr + i * 640 + j ) ) ;
+                }
+            }
+        }
+    }
+
+/**
  *@brief 读取一帧图像
  *@return  0：成功     -1：失败
  */
-static int read_frame( char *image )
+static int read_frame( char *image , enum FrameColor color )
     {
     struct v4l2_buffer buf;
 
@@ -304,7 +336,10 @@ static int read_frame( char *image )
         return -1;
         }
     assert( buf.index < CAMRERA_BUFFER_NUM );
-    memcpy( image , g_frame_buffer[ 0 ].frameStart , g_frame_size );
+
+    ChangeFrameColor( image , g_frame_buffer[ 0 ].frameStart , color );
+
+    //memcpy( image , g_frame_buffer[ 0 ].frameStart , g_frame_size );
 
     if ( -1 == xioctl( g_open_camera_fd , VIDIOC_QBUF , &buf ) )
         {
@@ -318,7 +353,7 @@ static int read_frame( char *image )
  *@brief 获得一帧图像
  *@return  0：成功     -1：失败
  */
-int GetPicture(char *image)
+int GetPicture(char *image , enum FrameColor color )
     {
     int ret;
     fd_set fds;
@@ -336,7 +371,7 @@ int GetPicture(char *image)
         return -1;
         }
 
-    ret = read_frame( image );
+    ret = read_frame( image , color );
     return ret;
     }
 

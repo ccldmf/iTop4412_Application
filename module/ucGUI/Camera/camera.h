@@ -11,6 +11,14 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+// 摄像头每帧图片颜色
+enum FrameColor
+    {
+    COLOR_GRAY,         // 灰度
+    COLOR_RGB,          // 真彩
+    COLOR_COLOR,        // 伪彩
+    };
+
 /**
  *@brief 摄像头初始化
  *@param devName:设备名 w:宽度  h:高度
@@ -28,7 +36,7 @@ int GetPictureSize();
  *@brief 获得一帧图像
  *@return  0：成功     -1：失败
  */
-int GetPicture(char *);
+int GetPicture(char * , enum FrameColor color);
 
 /**
  *@brief 开始图像传输

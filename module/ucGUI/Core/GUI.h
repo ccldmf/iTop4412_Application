@@ -521,6 +521,45 @@ void         GUI_RestoreContext(const GUI_CONTEXT* pContext);
 unsigned char *GetLcdMmapBuf(void);
 
 
+/*********************************************************************
+*
+*           Camera operation function
+*
+**********************************************************************
+*/
+#if GUI_SUPPORT_CAMERA
+
+/**
+ *@brief 摄像头初始化
+ *@return 0：成功  -1：失败
+ */
+extern int GUI_Camera_Init( void );
+
+/**
+ *@brief 显示摄像头画面
+ *@return 0：成功  -1：失败
+ */
+extern int GUI_Show_Camera_Image( void );
+
+/**
+ *@brief 关闭摄像头画面
+ *@return 0：成功  -1：失败
+ */
+extern int GUI_Close_Camera_Image( void );
+
+/**
+ *@brief 拍照
+ *@return 0：成功  -1：失败
+ */
+extern int GUI_Take_Photo( void );
+
+/**
+ *@brief 录视频
+ *@param seconds:录视频的时间长度(s)
+ *@return 0：成功  -1：失败
+ */
+extern int GUI_Record_Video( int seconds );
+#endif
 
 /*********************************************************************
 *

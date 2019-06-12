@@ -24,6 +24,15 @@ Purpose     : Configures abilities, fonts etc.
 #define GUI_OS                    (0)      /* Compile with multitasking support */
 #define GUI_SUPPORT_TOUCH         (0)      /* Support a touch screen (req. win-manager) */
 #define GUI_SUPPORT_UNICODE       (1)      /* Support mixed ASCII/UNICODE strings */
+#define GUI_SUPPORT_CAMERA        (1)      /* Support camera */
+
+#if GUI_SUPPORT_CAMERA
+#define CAMERA_DEVICE_WIDTH       640
+#define CAMERA_DEVICE_HEIGHT      512
+#define CAMERA_DEVICE_NAME        "/dev/video0"
+#define SAVE_CAMERA_VIDEO_PATH    "./Video/"
+#define SAVE_CAMERA_PICTURE_PATH  "./Picture"
+#endif
 
 #define GUI_DEFAULT_FONT          &GUI_Font6x8
 #define GUI_ALLOC_SIZE            25*1024  /* Size of dynamic memory ... For WM and memory devices*/

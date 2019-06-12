@@ -1,7 +1,7 @@
 
 CC=arm-none-linux-gnueabi-ar
 
-SUBDIRS=AntiAlias ConvertMono Font LCDDriver MemDev Widget ConvertColor Core JPEG MultiLayer WM TouchScreen
+SUBDIRS=AntiAlias ConvertMono Font Camera LCDDriver MemDev Widget ConvertColor Core JPEG MultiLayer WM TouchScreen
 
 LIBOBJS=
 LIBOBJS+=$(wildcard AntiAlias/*.o)
@@ -16,6 +16,8 @@ LIBOBJS+=$(wildcard JPEG/*.o)
 LIBOBJS+=$(wildcard MultiLayer/*.o)
 LIBOBJS+=$(wildcard WM/*.o)
 LIBOBJS+=$(wildcard TouchScreen/*.o)
+LIBOBJS+=$(wildcard Camera/*.o)
+
 
 all:
 	for name in $(SUBDIRS);	\
