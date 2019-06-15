@@ -29,6 +29,7 @@ Purpose     : Configures abilities, fonts etc.
 #if GUI_SUPPORT_CAMERA
 #define CAMERA_DEVICE_WIDTH       640
 #define CAMERA_DEVICE_HEIGHT      512
+#define DISPLAY_VIDEO_OFFSET      300
 #define CAMERA_DEVICE_NAME        "/dev/video0"
 #define SAVE_CAMERA_VIDEO_PATH    "./Video/"
 #define SAVE_CAMERA_PICTURE_PATH  "./Picture"

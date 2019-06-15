@@ -22,7 +22,12 @@
 #include <sys/ioctl.h>
 #include <asm/types.h>          /* for videodev2.h */
 #include <linux/videodev2.h>
+#include <time.h>
 #include "camera.h"
+#include "../Config/LCDConf.h"
+#include "../Config/GUIConf.h"
+#include "../Core/GUI.h"
+
 
 // Save image data buffer queue number
 #define CAMRERA_BUFFER_NUM      2
@@ -291,30 +296,29 @@ int GetPictureSize()
  *@brief 将抓取到的一帧数据设置为指定颜色
  *@return  无
  */
-static void ChangeFrameColor( char *des , char *src , enum FrameColor color )
+static void ChangeFrameColor( char *des , char *src )
     {
-    int *des_ptr  = ( char *)des;
+    char *des_ptr  = ( char *)des + ( LCD_XSIZE * 4 );
     char *src_ptr = ( short *)src;
-    int i,j;
-    int width  = 450;
-    int height = 200;
+    int i , j ;
+    int theRect_X      = ( DISPLAY_VIDEO_OFFSET / 4 );
+    int theRect_Y      = LCD_YSIZE;
+    int theRect_Widht  = ( DISPLAY_VIDEO_OFFSET + LCD_XSIZE ) / 4;
+    int theRext_Height = LCD_YSIZE;
 
-    if ( color == COLOR_RGB )
-        {
+    // Draw a rect
+    GUI_SetColor(GUI_RED);
+    GUI_DrawHLine( 0 , theRect_X , theRect_Widht ) ;
+    GUI_DrawHLine( ( theRect_Y - 1 ) , theRect_X , theRect_Widht );
 
-        }
-    else if ( color == COLOR_COLOR )
-        {
+    GUI_DrawVLine( ( theRect_X - 1 ) , 0 , theRect_Y );
+    GUI_DrawVLine( ( theRect_X + LCD_XSIZE / 4 + 1 ) , 0 , theRect_Y );
 
-        }
-    else
+    for ( i = 0 ; i < ( LCD_YSIZE - 2 ) ; i++ )
         {
-        for ( i = 0 ; i < height ; i++ )
+        for ( j = 0 ; j < LCD_XSIZE ; j++ )
             {
-            for ( j = 0 ; j < width ; j++ )
-                {
-                *( des_ptr + i *480 + j ) = ( * ( src_ptr + i * 640 + j ) ) ;
-                }
+            *( des_ptr + i * LCD_XSIZE * 4  + j + DISPLAY_VIDEO_OFFSET ) = ( * ( src_ptr + i * CAMERA_DEVICE_WIDTH  + j ) ) ;
             }
         }
     }
@@ -323,7 +327,7 @@ static void ChangeFrameColor( char *des , char *src , enum FrameColor color )
  *@brief 读取一帧图像
  *@return  0：成功     -1：失败
  */
-static int read_frame( char *image , enum FrameColor color )
+static int read_frame( char *image , enum CameraControlState status )
     {
     struct v4l2_buffer buf;
 
@@ -337,9 +341,14 @@ static int read_frame( char *image , enum FrameColor color )
         }
     assert( buf.index < CAMRERA_BUFFER_NUM );
 
-    ChangeFrameColor( image , g_frame_buffer[ 0 ].frameStart , color );
-
-    //memcpy( image , g_frame_buffer[ 0 ].frameStart , g_frame_size );
+    if ( CAMERA_SHOW_IMAGE == status )
+        {
+        ChangeFrameColor( image , g_frame_buffer[ 0 ].frameStart );
+        }
+    else if ( CAMERA_TAKE_PHOTO == status || CAMERA_RECORD_VIDEO == status )
+        {
+        memcpy( image , g_frame_buffer[ 0 ].frameStart , g_frame_size );
+        }
 
     if ( -1 == xioctl( g_open_camera_fd , VIDIOC_QBUF , &buf ) )
         {
@@ -353,7 +362,7 @@ static int read_frame( char *image , enum FrameColor color )
  *@brief 获得一帧图像
  *@return  0：成功     -1：失败
  */
-int GetPicture(char *image , enum FrameColor color )
+int GetPicture( char *image , enum CameraControlState status )
     {
     int ret;
     fd_set fds;
@@ -371,9 +380,47 @@ int GetPicture(char *image , enum FrameColor color )
         return -1;
         }
 
-    ret = read_frame( image , color );
+    ret = read_frame( image , status );
     return ret;
     }
+
+/**
+ *@brief 拍照
+ *@param name:照片名，如果为NULL,则使用系统默认值
+ *@return  0：成功     -1：失败
+ */
+int TakePhoto( char *name )
+    {
+    char *thePictureName;
+    char *thePictureData;
+    FILE *thePicture;
+    if ( NULL != name )
+        {
+        thePictureName = name;
+        }
+    else
+        {
+        time_t t;
+        struct tm *theTime = NULL;
+        thePictureName = ( char * )malloc( 50 );
+        memset( thePictureName , 0 , 50 );
+        memcpy( thePictureName , SAVE_CAMERA_VIDEO_PATH , strlen( SAVE_CAMERA_VIDEO_PATH ) );
+        time( &t );
+        theTime = localtime( &t );
+        strftime( thePictureName + strlen( SAVE_CAMERA_VIDEO_PATH ) , 20 , "%Y_%m_%d_%H_%M_%S" , theTime );
+        }
+    printf( "Save Picture File Name : %s\n", thePictureName );
+    thePicture     = fopen( thePictureName , "w+" );
+    thePictureData = ( char * )malloc( g_frame_size );
+    memset( thePictureData , 0 , g_frame_size );
+    GetPicture( thePictureData , CAMERA_TAKE_PHOTO );
+    fwrite( thePictureData , 1 , g_frame_size , thePicture );
+    fclose( thePicture );
+    free( thePictureData );
+    free( thePictureName );
+    return 0;
+    }
+
 
 /**
  *@brief 开始图像传输

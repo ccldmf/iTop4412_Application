@@ -11,12 +11,14 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-// 摄像头每帧图片颜色
-enum FrameColor
+// 摄像头控制状态
+enum CameraControlState
     {
-    COLOR_GRAY,         // 灰度
-    COLOR_RGB,          // 真彩
-    COLOR_COLOR,        // 伪彩
+    CAMERA_IDLE,            // Idle
+    CAMERA_SHOW_IMAGE,      // Show image
+    CAMERA_CLOSE_IMAGE,     // Close image
+    CAMERA_TAKE_PHOTO,      // Take photo
+    CAMERA_RECORD_VIDEO     // Record video
     };
 
 /**
@@ -36,7 +38,14 @@ int GetPictureSize();
  *@brief 获得一帧图像
  *@return  0：成功     -1：失败
  */
-int GetPicture(char * , enum FrameColor color);
+int GetPicture( char * , enum CameraControlState status );
+
+/**
+ *@brief 拍照
+ *@param name:照片名，如果为NULL,则使用系统默认值
+ *@return  0：成功     -1：失败
+ */
+int TakePhoto( char *name );
 
 /**
  *@brief 开始图像传输

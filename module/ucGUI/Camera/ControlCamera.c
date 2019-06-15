@@ -14,53 +14,10 @@
 #include <stdio.h>
 #include "camera.h"
 #include "ControlCamera.h"
+#include "../Core/GUI.h"
 
-// 摄像头控制状态
-enum CameraControlState
-    {
-    CAMERA_IDLE,
-    CAMERA_SHOW_IMAGE,
-    CAMERA_CLOSE_IMAGE,
-    CAMERA_TAKE_PHOTO,
-    CAMERA_RECORD_VIDEO
-    }theCameraContrlState;
-
-/*
-void fb_drawbmp(int width,int height,unsigned char* pdata)
-    {
-    char* pRGB = GetLcdMmapBuf();
-    char* pYUV = pdata;
-    char* pY   = pYUV;
-    char* pU   = pY + 640*512;
-    char* pV   = pU + 640*512/4;
-    int bgr[4];
-
-    int i,j,k;
-    int yIdx,uIdex,vIdex;
-    int idx;
-    for(i = 0;i < height;i++)
-        {
-        for(j = 0;j < width;j++)
-            {
-            yIdx = i*640+j;
-            vIdex = i*640/4 + j;
-            uIdex = vIdex;
-            bgr[0] = (int)(pY[yIdx] + 1.732 * (pU[vIdex] - 128));                                // b
-            bgr[1] = (int)(pY[yIdx] - 0.698 * (pU[uIdex] - 128) - 0.703*(pV[vIdex] - 128));      // g
-            bgr[2] = (int)(pY[yIdx] + 0.370 * (pV[uIdex] - 128));                                // r
-
-            for(k = 0;k < 4;k++)
-                {
-                idx = (i*width + j)*4 + k;
-                if(bgr[k] >= 0 && bgr[k] <= 255)
-                    pRGB[idx] = bgr[k];
-                else
-                    pRGB[idx] = (bgr[k] < 0)?0:255;
-                }
-            }
-        }
-    }
-*/
+// Camera status
+enum CameraControlState theCameraContrlState;
 
 /**
  *@brief 摄像头线程，用于摄像头独立使用
@@ -74,13 +31,17 @@ static void *CameraHandlePthread( void *arg )
             {
             case CAMERA_SHOW_IMAGE:
                 ptr = GetLcdMmapBuf();
-                GetPicture( ptr , COLOR_GRAY);
+                GetPicture( ptr , CAMERA_SHOW_IMAGE );
                 break;
 
             case CAMERA_CLOSE_IMAGE:
+                GUI_Clear();
+                GUI_Exec1();
                 break;
 
             case CAMERA_TAKE_PHOTO:
+                TakePhoto( NULL );
+                theCameraContrlState = CAMERA_SHOW_IMAGE;
                 break;
 
             case CAMERA_RECORD_VIDEO:
@@ -115,8 +76,7 @@ int GUI_Camera_Init( void )
         }
 
     // Set cameara state
-    //theCameraContrlState = CAMERA_IDLE;
-    theCameraContrlState = CAMERA_SHOW_IMAGE;
+    theCameraContrlState = CAMERA_IDLE;
     return 0;
     }
 
