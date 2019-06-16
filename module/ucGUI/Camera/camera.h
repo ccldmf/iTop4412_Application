@@ -48,6 +48,14 @@ int GetPicture( char * , enum CameraControlState status );
 int TakePhoto( char *name );
 
 /**
+ *@brief 录制视频
+ *@param name:视频名，如果为NULL,则使用系统默认值
+ *@param seconds:录制视频长度
+ *@return  0：成功     -1：失败
+ */
+int RecordVideo( char *name , int seconds );
+
+/**
  *@brief 开始图像传输
  *@return  0：成功     -1：失败
  */

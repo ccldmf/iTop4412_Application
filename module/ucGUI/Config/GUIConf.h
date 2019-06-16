@@ -32,7 +32,7 @@ Purpose     : Configures abilities, fonts etc.
 #define DISPLAY_VIDEO_OFFSET      300
 #define CAMERA_DEVICE_NAME        "/dev/video0"
 #define SAVE_CAMERA_VIDEO_PATH    "./Video/"
-#define SAVE_CAMERA_PICTURE_PATH  "./Picture"
+#define SAVE_CAMERA_PICTURE_PATH  "./Picture/"
 #endif
 
 #define GUI_DEFAULT_FONT          &GUI_Font6x8

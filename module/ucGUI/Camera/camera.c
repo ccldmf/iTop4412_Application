@@ -384,6 +384,39 @@ int GetPicture( char *image , enum CameraControlState status )
     return ret;
     }
 
+static void YUV2RGB( char *Psrc , char *Pdes )
+    {
+    char* pRGB = Pdes;
+    char* pYUV = Psrc;
+    char* pY   = pYUV;
+    char* pU   = pY + CAMERA_DEVICE_WIDTH * CAMERA_DEVICE_HEIGHT ;
+    char* pV   = pU + CAMERA_DEVICE_WIDTH * CAMERA_DEVICE_HEIGHT / 4;
+    int bgr[ 4 ];
+    int i,j,k;
+    int yIdx,uIdex,vIdex;
+    int idx;
+    for( i = 0 ; i < CAMERA_DEVICE_HEIGHT ; i++ )
+        {
+        for( j = 0 ; j < CAMERA_DEVICE_WIDTH ; j++ )
+            {
+            yIdx  = i * CAMERA_DEVICE_WIDTH + j;
+            vIdex = i * CAMERA_DEVICE_WIDTH / 4 + j;
+            uIdex = vIdex;
+            bgr[ 0 ] = ( int )( pY[ yIdx ] + 1.732 * ( pU[ vIdex ] - 128 ) );                                   // b
+            bgr[ 1 ] = ( int )( pY[ yIdx ] - 0.698 * ( pU[ uIdex ] - 128 ) - 0.703 * ( pV[ vIdex ] - 128 ) );   // g
+            bgr[ 2 ] = ( int )( pY[ yIdx ] + 0.370 * ( pV[ uIdex ] - 128 ) );                                   // r
+             for( k = 0 ; k < 4 ; k++ )
+                {
+                idx = ( i * CAMERA_DEVICE_WIDTH + j ) * 4 + k;
+                if( bgr[ k ] >= 0 && bgr[ k ] <= 255 )
+                    pRGB[ idx ] = bgr[ k ];
+                else
+                    pRGB[ idx ] = ( bgr[ k ] < 0 ) ? 0 : 255;
+                }
+            }
+        }
+    }
+
 /**
  *@brief 拍照
  *@param name:照片名，如果为NULL,则使用系统默认值
@@ -393,7 +426,9 @@ int TakePhoto( char *name )
     {
     char *thePictureName;
     char *thePictureData;
+    char *theRGBData;
     FILE *thePicture;
+
     if ( NULL != name )
         {
         thePictureName = name;
@@ -404,23 +439,81 @@ int TakePhoto( char *name )
         struct tm *theTime = NULL;
         thePictureName = ( char * )malloc( 50 );
         memset( thePictureName , 0 , 50 );
-        memcpy( thePictureName , SAVE_CAMERA_VIDEO_PATH , strlen( SAVE_CAMERA_VIDEO_PATH ) );
+        memcpy( thePictureName , SAVE_CAMERA_PICTURE_PATH , strlen( SAVE_CAMERA_PICTURE_PATH ) );
         time( &t );
         theTime = localtime( &t );
-        strftime( thePictureName + strlen( SAVE_CAMERA_VIDEO_PATH ) , 20 , "%Y_%m_%d_%H_%M_%S" , theTime );
+        strftime( thePictureName + strlen( SAVE_CAMERA_PICTURE_PATH ) , 20 , "%Y_%m_%d_%H_%M_%S" , theTime );
         }
     printf( "Save Picture File Name : %s\n", thePictureName );
     thePicture     = fopen( thePictureName , "w+" );
+
     thePictureData = ( char * )malloc( g_frame_size );
     memset( thePictureData , 0 , g_frame_size );
+
     GetPicture( thePictureData , CAMERA_TAKE_PHOTO );
-    fwrite( thePictureData , 1 , g_frame_size , thePicture );
+
+    theRGBData = ( char * )malloc( CAMERA_DEVICE_WIDTH * CAMERA_DEVICE_HEIGHT * 4 );
+    memset( theRGBData , 0 , CAMERA_DEVICE_WIDTH * CAMERA_DEVICE_HEIGHT * 4 );
+
+    YUV2RGB( thePictureData , theRGBData );
+
+    fwrite( theRGBData , 1 , CAMERA_DEVICE_WIDTH * CAMERA_DEVICE_HEIGHT * 4 , thePicture );
     fclose( thePicture );
     free( thePictureData );
     free( thePictureName );
+    free( theRGBData );
     return 0;
     }
 
+/**
+ *@brief 录制视频
+ *@param name:视频名，如果为NULL,则使用系统默认值
+ *@param seconds:录制视频长度
+ *@return  0：成功     -1：失败
+ */
+int RecordVideo( char *name , int seconds )
+    {
+    char *theVideoName;
+    FILE *theVideo;
+    char *theVideoData;
+    time_t t;
+    struct tm *theTime = NULL;
+    int theCurrentTime;
+
+    if ( NULL != name )
+        {
+        theVideoName = name;
+        }
+    else
+        {
+        theVideoName = ( char * )malloc( 50 );
+        memset( theVideoName , 0 , 50 );
+        memcpy( theVideoName , SAVE_CAMERA_VIDEO_PATH , strlen( SAVE_CAMERA_VIDEO_PATH ) );
+        time( &t );
+        theTime = localtime( &t );
+        strftime( theVideoName + strlen( SAVE_CAMERA_VIDEO_PATH ) , 20 , "%Y_%m_%d_%H_%M_%S" , theTime );
+        }
+    printf( "Save Video File Name : %s\n", theVideoName );
+    theVideo     = fopen( theVideoName , "w+" );
+
+    theVideoData = ( char * )malloc( g_frame_size );
+    memset( theVideoData , 0 , g_frame_size );
+
+    time( &t );
+    theCurrentTime = t;
+
+    while( (theCurrentTime + seconds ) >= t )
+        {
+        GetPicture( theVideoData , CAMERA_RECORD_VIDEO );
+        fwrite( theVideoData , 1 , g_frame_size , theVideo );
+        t = time( &t );
+        }
+
+    fclose( theVideo );
+    free( theVideoData );
+    free( theVideoName );
+    return 0;
+    }
 
 /**
  *@brief 开始图像传输

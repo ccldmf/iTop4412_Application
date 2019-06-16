@@ -19,6 +19,8 @@
 // Camera status
 enum CameraControlState theCameraContrlState;
 
+int gRecordVideioTimeCount = 0;
+
 /**
  *@brief 摄像头线程，用于摄像头独立使用
  */
@@ -45,6 +47,8 @@ static void *CameraHandlePthread( void *arg )
                 break;
 
             case CAMERA_RECORD_VIDEO:
+                RecordVideo( NULL , gRecordVideioTimeCount );
+                theCameraContrlState = CAMERA_SHOW_IMAGE;
                 break;
 
             case CAMERA_IDLE:
@@ -114,6 +118,7 @@ int GUI_Take_Photo( void )
  */
 int GUI_Record_Video( int seconds )
     {
+    gRecordVideioTimeCount = seconds;
     theCameraContrlState = CAMERA_RECORD_VIDEO;
     }
 
